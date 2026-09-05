@@ -131,7 +131,7 @@ Table entity_type {
   '''
 }
 
-Ref: entity_type.parent_id > entity_type.id
+Ref: entity_type.parent_id >? entity_type.id
 
 
 Table activity_type {
@@ -185,7 +185,7 @@ Table activity_type {
   '''
 }
 
-Ref: activity_type.parent_id > activity_type.id
+Ref: activity_type.parent_id >? activity_type.id
 
 
 
@@ -251,7 +251,7 @@ Table physical_identity {
   '''
 }
 
-Ref: entity.physical_identity_id > physical_identity.id
+Ref: entity.physical_identity_id >? physical_identity.id
 
 
 
@@ -386,7 +386,7 @@ Table entity_information_record {
 }
 
 Ref: entity_information_record.entity_id > entity.id
-Ref: entity_information_record.supersedes_record_id > entity_information_record.id
+Ref: entity_information_record.supersedes_record_id >? entity_information_record.id
 
 
 
@@ -419,7 +419,7 @@ Table information_record_type {
   '''
 }
 
-Ref: entity_information_record.information_record_type_id > information_record_type.id
+Ref: entity_information_record.information_record_type_id >? information_record_type.id
 
 
 
@@ -484,7 +484,7 @@ Table activity_information_record {
 }
 
 Ref: activity_information_record.activity_id > activity.id
-Ref: activity_information_record.supersedes_record_id > activity_information_record.id
+Ref: activity_information_record.supersedes_record_id >? activity_information_record.id
 
 
 
@@ -575,7 +575,7 @@ Table activity_parameter {
 }
 
 Ref: activity_parameter.activity_information_record_id > activity_information_record.id
-Ref: activity_parameter.parameter_definition_id > parameter_definition.id
+Ref: activity_parameter.parameter_definition_id >? parameter_definition.id
 
 
 
@@ -641,7 +641,7 @@ Table protocol_parameter {
 Ref: protocol_parameter.protocol_id > protocol.id
 Ref: protocol_parameter.parameter_definition_id > parameter_definition.id
 
-Ref: activity_information_record.protocol_id > protocol.id
+Ref: activity_information_record.protocol_id >? protocol.id
 
 
 
@@ -676,10 +676,10 @@ Table agent {
   '''
 }
 
-Ref: entity_information_record.recorded_by_agent_id > agent.id
+Ref: entity_information_record.recorded_by_agent_id >? agent.id
 
-Ref: activity_information_record.recorded_by_agent_id > agent.id
-Ref: activity_information_record.operator_agent_id > agent.id
+Ref: activity_information_record.recorded_by_agent_id >? agent.id
+Ref: activity_information_record.operator_agent_id >? agent.id
 
 
 
@@ -705,7 +705,7 @@ Table instrument {
   metadata jsonb
 }
 
-Ref: activity_information_record.instrument_id > instrument.id
+Ref: activity_information_record.instrument_id >? instrument.id
 
 
 
@@ -754,9 +754,9 @@ Table accession_information {
   '''
 }
 
-Ref: accession_information.activity_information_record_id > activity_information_record.id
-Ref: accession_information.source_organization_agent_id > agent.id
-Ref: accession_information.received_by_agent_id > agent.id
+Ref: accession_information.activity_information_record_id - activity_information_record.id
+Ref: accession_information.source_organization_agent_id >? agent.id
+Ref: accession_information.received_by_agent_id >? agent.id
 
 
 
@@ -807,8 +807,8 @@ Table external_reference {
   '''
 }
 
-Ref: external_reference.entity_id > entity.id
-Ref: external_reference.activity_id > activity.id
+Ref: external_reference.entity_id >? entity.id
+Ref: external_reference.activity_id >? activity.id
 
 
 
@@ -835,8 +835,8 @@ Table entity_provenance {
   '''
 }
 
-Ref: entity_provenance.entity_id > entity.id
-Ref: entity_provenance.provenance_boundary_activity_id > activity.id
+Ref: entity_provenance.entity_id - entity.id
+Ref: entity_provenance.provenance_boundary_activity_id >? activity.id
 
 
 
@@ -894,4 +894,4 @@ Table entity_relation {
 Ref: entity_relation.source_entity_id > entity.id
 Ref: entity_relation.target_entity_id > entity.id
 Ref: entity_relation.entity_relation_type_id > entity_relation_type.id
-Ref: entity_relation.activity_id > activity.id
+Ref: entity_relation.activity_id >? activity.id
