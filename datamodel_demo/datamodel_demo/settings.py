@@ -26,12 +26,20 @@ SECRET_KEY = "django-insecure-f=w+e$yp_s&#oxk1r_0l_n#8t+4^3&6o@_21oyg-s8qob63f56
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "https://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "app1",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -79,7 +87,7 @@ DATABASES = {
         "NAME": os.environ.get("MYSQL_DATABASE", "sgbc"),
         "USER": os.environ.get("MYSQL_USER", "sgbc"),
         "PASSWORD": os.environ.get("MYSQL_PASSWORD", "sgbc_dev_password"),
-        "HOST": os.environ.get("MYSQL_HOST", "db"),
+        "HOST": os.environ.get("MYSQL_HOST", "127.0.0.1"),
         "PORT": os.environ.get("MYSQL_PORT", "3306"),
     }
 }
