@@ -2,7 +2,7 @@ services:
   db:
     image: mysql:8.4
     environment:
-      MYSQL_DATABASE: sgbc
+      MYSQL_DATABASE: sgbc_django
       MYSQL_USER: sgbc
       MYSQL_PASSWORD: sgbc_dev_password
       MYSQL_ROOT_PASSWORD: sgbc_root_password
@@ -21,7 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      MYSQL_DATABASE: sgbc
+      MYSQL_DATABASE: sgbc_django
       MYSQL_USER: sgbc
       MYSQL_PASSWORD: sgbc_dev_password
       MYSQL_HOST: db

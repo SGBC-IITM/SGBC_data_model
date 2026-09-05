@@ -1,3 +1,35 @@
+# SGBC Data Model
+
+Django-first provenance model for biospecimens, biosamples, activities, and
+their versioned information records.
+
+## Development
+
+The project uses Django-managed models with MySQL. The Compose database is
+named `sgbc_django`.
+
+```bash
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+```
+
+Open the admin at <http://localhost:8000/admin/>.
+
+Models are declared in `datamodel_demo/app1/models.py`; migrations are the
+source of truth for the database schema. Do not use `inspectdb` or import the
+legacy SQL files for this branch.
+
+## Useful commands
+
+```bash
+docker compose exec web python manage.py makemigrations app1
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py check
+```
+
+The legacy conceptual DBML and SQL artifacts remain in the repository for
+reference.
 # SGBC_data_model
 
 *I want to make a data model including biospecimen and biosample, which models relationships through the abstraction of Activity - eg in post mortem whole brain histology, the biospecimen is the donor, and the activity of extraction produces the biosample 'brain'. Now the biosample can again be acted upon, like perfusion, fixation, freezing, storing, etc, each producing an artifact. I want to model this using dbml*

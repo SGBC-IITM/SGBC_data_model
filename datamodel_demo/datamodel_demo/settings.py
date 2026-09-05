@@ -85,7 +85,7 @@ WSGI_APPLICATION = "datamodel_demo.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("MYSQL_DATABASE", "sgbc"),
+        "NAME": os.environ.get("MYSQL_DATABASE", "sgbc_django"),
         "USER": os.environ.get("MYSQL_USER", "sgbc"),
         "PASSWORD": os.environ.get("MYSQL_PASSWORD", "sgbc_dev_password"),
         "HOST": os.environ.get("MYSQL_HOST", "127.0.0.1"),
