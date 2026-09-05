@@ -195,4 +195,51 @@ https://dbdiagram.io/d/SGBC_data_model-6a9bea4f5450bea1bef885bb
 | Image derived from tissue        | `Slide → Imaging → Image`                       |
 | Segmentation derived from image  | `Image → Segmentation Activity → Mask`          |
 
+## Django demo project and app
+
+<pre>
+pip install django mysqlclient django-unfold
+
+django-admin startproject datamodel_demo
+
+cd datamodel_demo
+
+python manage.py startapp app1
+</pre>
+
+## Django development environment
+
+The demo Django project uses MySQL through Docker Compose. Start the database
+and development server from the repository root:
+
+```bash
+docker compose up --build
+```
+
+The Django server is available at http://localhost:8000. Run management
+commands in the web container, for example:
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+The Compose database service includes the MySQL client CLI. To instantiate the
+schema and load the sample data, run these commands from the repository root,
+in this order:
+
+```bash
+docker compose exec -T db mysql -usgbc -psgbc_dev_password sgbc < SGBC_data_model.sql
+docker compose exec -T db mysql -usgbc -psgbc_dev_password sgbc < SGBC_sample_data.sql
+```
+
+You can connect interactively with:
+
+```bash
+docker compose exec db mysql -usgbc -psgbc_dev_password sgbc
+```
+
+Stop the services with `docker compose down`. The named `mysql_data` volume
+keeps the database between restarts; use `docker compose down -v` to remove it.
+
+
 
