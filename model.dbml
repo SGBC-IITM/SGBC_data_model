@@ -1,0 +1,897 @@
+//////////////////////////////////////////////////////////////
+// BIOSPECIMEN / BIOSAMPLE PROVENANCE MODEL
+//
+// Core principles:
+//
+// 1. Entity and Activity are immutable provenance nodes.
+//
+// 2. Mutable/descriptive information is stored in versioned
+//    sidecar Information Records.
+//
+// 3. Provenance is modeled as:
+//
+//      Entity --input--> Activity --output--> Entity
+//
+// 4. Activities may have:
+//      0..N inputs
+//      0..N outputs
+//
+//    This allows:
+//      Accession        0 -> N
+//      Transformation  N -> N
+//      Disposal        N -> 0
+//
+// 5. Protocol describes what SHOULD happen.
+//    Activity parameters record what DID happen.
+//
+// 6. Missing upstream provenance is represented by an
+//    accession activity rather than artificial "unknown"
+//    parent entities.
+//////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////////////
+
+Enum activity_entity_direction {
+  input
+  output
+}
+
+Enum activity_status {
+  planned
+  in_progress
+  completed
+  failed
+  cancelled
+}
+
+Enum provenance_status {
+  complete
+  partial
+  external
+  unavailable
+  unknown
+}
+
+Enum agent_type {
+  person
+  organization
+  software
+  service
+}
+
+Enum parameter_datatype {
+  text
+  integer
+  decimal
+  boolean
+  datetime
+  categorical
+  json
+}
+
+Enum external_reference_subject {
+  entity
+  activity
+}
+
+
+
+//////////////////////////////////////////////////////////////
+// CONTROLLED VOCABULARIES
+//////////////////////////////////////////////////////////////
+
+Table entity_type {
+  id uuid [pk]
+
+  code varchar [not null, unique]
+  name varchar [not null]
+
+  description text
+
+  parent_id uuid
+
+  ontology_id varchar
+  ontology_uri varchar
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Hierarchical vocabulary describing entity classes.
+
+  Example hierarchy:
+
+  biological_source
+    donor
+
+  material_entity
+    biospecimen
+      whole_brain
+      hemisphere
+      slab
+      tissue_block
+    biosample
+      tissue_section
+      tissue_curl
+      aliquot
+
+  physical_artifact
+    slide
+    container
+
+  digital_entity
+    image
+    volume
+    segmentation
+    feature_set
+    annotation
+  '''
+}
+
+Ref: entity_type.parent_id > entity_type.id
+
+
+Table activity_type {
+  id uuid [pk]
+
+  code varchar [not null, unique]
+  name varchar [not null]
+
+  description text
+
+  parent_id uuid
+
+  ontology_id varchar
+  ontology_uri varchar
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Hierarchical vocabulary of activities.
+
+  Example hierarchy:
+
+  acquisition
+    accession
+    extraction
+
+  preservation
+    perfusion
+    fixation
+    cryoprotection
+    freezing
+    storage
+
+  processing
+    dissection
+    slabbing
+    sectioning
+    mounting
+    staining
+
+  imaging
+    slide_scanning
+    MRI
+    microscopy
+
+  computational_processing
+    registration
+    normalization
+    segmentation
+    feature_extraction
+  '''
+}
+
+Ref: activity_type.parent_id > activity_type.id
+
+
+
+//////////////////////////////////////////////////////////////
+// CORE ENTITY
+//////////////////////////////////////////////////////////////
+
+Table entity {
+  id uuid [pk]
+
+  entity_type_id uuid [not null]
+
+  // Stable local identifier
+  identifier varchar [not null, unique]
+
+  // Optional identity shared across states of same physical object
+  physical_identity_id uuid
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Immutable provenance node representing a biological,
+  physical, or digital entity.
+
+  Mutable properties such as names, classifications,
+  locations, condition, status, etc. belong in
+  entity_information_record.
+
+  physical_identity_id can associate multiple provenance
+  states with the same physical object.
+
+  Example:
+
+  fresh brain  -> P001
+  fixed brain  -> P001
+  frozen brain -> P001
+
+  After physical subdivision:
+
+  left hemisphere  -> P002
+  right hemisphere -> P003
+  '''
+}
+
+Ref: entity.entity_type_id > entity_type.id
+
+
+
+//////////////////////////////////////////////////////////////
+// PHYSICAL IDENTITY
+//////////////////////////////////////////////////////////////
+
+Table physical_identity {
+  id uuid [pk]
+
+  identifier varchar [not null, unique]
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Represents persistent physical identity independently
+  of processing state.
+  '''
+}
+
+Ref: entity.physical_identity_id > physical_identity.id
+
+
+
+//////////////////////////////////////////////////////////////
+// CORE ACTIVITY
+//////////////////////////////////////////////////////////////
+
+Table activity {
+  id uuid [pk]
+
+  activity_type_id uuid [not null]
+
+  identifier varchar [not null, unique]
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Immutable provenance event.
+
+  Activity execution details are stored in
+  activity_information_record.
+
+  Activities may have zero inputs or zero outputs.
+
+  Example:
+    accession: 0 -> N
+    fixation:   N -> N
+    disposal:   N -> 0
+  '''
+}
+
+Ref: activity.activity_type_id > activity_type.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ACTIVITY <-> ENTITY PROVENANCE GRAPH
+//////////////////////////////////////////////////////////////
+
+Table activity_entity {
+  id uuid [pk]
+
+  activity_id uuid [not null]
+  entity_id uuid [not null]
+
+  direction activity_entity_direction [not null]
+
+  // Semantic role of entity in activity
+  // e.g. source_tissue, reagent, output_section,
+  // reference_image, moving_image
+  role varchar
+
+  sequence_no integer
+
+  created_at timestamp [not null]
+
+  indexes {
+    (activity_id, entity_id, direction, role) [unique]
+    activity_id
+    entity_id
+  }
+
+  Note: '''
+  Junction table implementing the provenance graph:
+
+       Entity -> Activity -> Entity
+
+  No database constraint requires an activity to have an
+  input. This intentionally supports accession activities.
+  '''
+}
+
+Ref: activity_entity.activity_id > activity.id
+Ref: activity_entity.entity_id > entity.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ENTITY INFORMATION RECORD
+//////////////////////////////////////////////////////////////
+
+Table entity_information_record {
+  id uuid [pk]
+
+  entity_id uuid [not null]
+
+  information_record_type_id uuid
+
+  version integer [not null]
+
+  // Real-world validity interval
+  valid_from timestamp
+  valid_until timestamp
+
+  // When information entered the information system
+  recorded_at timestamp [not null]
+
+  recorded_by_agent_id uuid
+
+  supersedes_record_id uuid
+
+  // Common descriptive fields
+  name varchar
+  description text
+
+  status varchar
+
+  // Extensible domain-specific information
+  metadata jsonb
+
+  indexes {
+    (entity_id, version) [unique]
+    (entity_id, valid_from)
+    entity_id
+  }
+
+  Note: '''
+  Versioned sidecar record describing an Entity.
+
+  Changes in knowledge create a new InformationRecord
+  rather than modifying the Entity.
+
+  Examples:
+    anatomical designation
+    specimen condition
+    storage location
+    QC state
+    custodian
+    availability
+    descriptive annotation
+  '''
+}
+
+Ref: entity_information_record.entity_id > entity.id
+Ref: entity_information_record.supersedes_record_id > entity_information_record.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ENTITY INFORMATION RECORD TYPES
+//////////////////////////////////////////////////////////////
+
+Table information_record_type {
+  id uuid [pk]
+
+  code varchar [not null, unique]
+  name varchar [not null]
+
+  description text
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Allows independent information sidecars.
+
+  Examples:
+
+    general
+    anatomical
+    storage
+    quality_control
+    custody
+    clinical_annotation
+    imaging
+  '''
+}
+
+Ref: entity_information_record.information_record_type_id > information_record_type.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ACTIVITY INFORMATION RECORD
+//////////////////////////////////////////////////////////////
+
+Table activity_information_record {
+  id uuid [pk]
+
+  activity_id uuid [not null]
+
+  version integer [not null]
+
+  valid_from timestamp
+  valid_until timestamp
+
+  recorded_at timestamp [not null]
+
+  recorded_by_agent_id uuid
+
+  supersedes_record_id uuid
+
+  status activity_status
+
+  started_at timestamp
+  ended_at timestamp
+
+  protocol_id uuid
+
+  operator_agent_id uuid
+  instrument_id uuid
+
+  description text
+  notes text
+
+  metadata jsonb
+
+  indexes {
+    (activity_id, version) [unique]
+    activity_id
+  }
+
+  Note: '''
+  Versioned sidecar describing Activity execution.
+
+  The Activity establishes that an event exists.
+  This record captures what is currently known
+  about that event.
+
+  Includes execution details such as:
+    timing
+    operator
+    instrument
+    protocol
+    status
+    notes
+
+  Process parameters are stored separately in
+  activity_parameter.
+  '''
+}
+
+Ref: activity_information_record.activity_id > activity.id
+Ref: activity_information_record.supersedes_record_id > activity_information_record.id
+
+
+
+//////////////////////////////////////////////////////////////
+// PARAMETER DEFINITIONS
+//////////////////////////////////////////////////////////////
+
+Table parameter_definition {
+  id uuid [pk]
+
+  code varchar [not null, unique]
+
+  name varchar [not null]
+  description text
+
+  datatype parameter_datatype [not null]
+
+  canonical_unit varchar
+
+  ontology_id varchar
+  ontology_uri varchar
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Controlled definition of reusable process parameters.
+
+  Examples:
+
+    fixation_temperature
+    fixation_duration
+    fixative_concentration
+    section_thickness
+    scanner_resolution
+    laser_power
+  '''
+}
+
+
+
+//////////////////////////////////////////////////////////////
+// ACTIVITY PARAMETER VALUES
+//////////////////////////////////////////////////////////////
+
+Table activity_parameter {
+  id uuid [pk]
+
+  activity_information_record_id uuid [not null]
+
+  parameter_definition_id uuid
+
+  // Used when parameter has not yet been formalized
+  parameter_name varchar
+
+  value_text text
+  value_integer bigint
+  value_decimal decimal
+  value_boolean boolean
+  value_datetime timestamp
+  value_json jsonb
+
+  unit varchar
+
+  sequence_no integer
+
+  metadata jsonb
+
+  indexes {
+    activity_information_record_id
+    parameter_definition_id
+  }
+
+  Note: '''
+  Captures actual execution parameters for an activity.
+
+  Example:
+
+    fixation_temperature = 4.3 C
+    fixation_duration = 76.2 h
+    formalin_concentration = 10 %
+
+  Parameter_definition_id is preferred for controlled
+  parameters.
+
+  parameter_name permits ad-hoc parameters during
+  exploratory workflows.
+  '''
+}
+
+Ref: activity_parameter.activity_information_record_id > activity_information_record.id
+Ref: activity_parameter.parameter_definition_id > parameter_definition.id
+
+
+
+//////////////////////////////////////////////////////////////
+// PROTOCOL
+//////////////////////////////////////////////////////////////
+
+Table protocol {
+  id uuid [pk]
+
+  identifier varchar [not null, unique]
+
+  name varchar [not null]
+  version varchar
+
+  description text
+
+  uri varchar
+
+  created_at timestamp [not null]
+
+  Note: '''
+  Protocol defines intended procedure:
+
+        what SHOULD happen.
+
+  activity_parameter captures execution:
+
+        what DID happen.
+  '''
+}
+
+
+
+//////////////////////////////////////////////////////////////
+// PROTOCOL PARAMETER SPECIFICATIONS
+//////////////////////////////////////////////////////////////
+
+Table protocol_parameter {
+  id uuid [pk]
+
+  protocol_id uuid [not null]
+
+  parameter_definition_id uuid [not null]
+
+  required boolean [default: false]
+
+  default_value_text text
+  default_value_decimal decimal
+
+  minimum_value decimal
+  maximum_value decimal
+
+  unit varchar
+
+  description text
+
+  indexes {
+    (protocol_id, parameter_definition_id) [unique]
+  }
+}
+
+Ref: protocol_parameter.protocol_id > protocol.id
+Ref: protocol_parameter.parameter_definition_id > parameter_definition.id
+
+Ref: activity_information_record.protocol_id > protocol.id
+
+
+
+//////////////////////////////////////////////////////////////
+// AGENTS
+//////////////////////////////////////////////////////////////
+
+Table agent {
+  id uuid [pk]
+
+  identifier varchar [not null, unique]
+
+  agent_type agent_type [not null]
+
+  name varchar [not null]
+
+  affiliation varchar
+
+  created_at timestamp [not null]
+
+  metadata jsonb
+
+  Note: '''
+  An Agent may be:
+
+    person
+    organization
+    software
+    service
+
+  This permits both wet-lab and computational provenance.
+  '''
+}
+
+Ref: entity_information_record.recorded_by_agent_id > agent.id
+
+Ref: activity_information_record.recorded_by_agent_id > agent.id
+Ref: activity_information_record.operator_agent_id > agent.id
+
+
+
+//////////////////////////////////////////////////////////////
+// INSTRUMENTS
+//////////////////////////////////////////////////////////////
+
+Table instrument {
+  id uuid [pk]
+
+  identifier varchar [not null, unique]
+
+  instrument_type varchar
+
+  manufacturer varchar
+  model varchar
+  serial_number varchar
+
+  software_version varchar
+
+  created_at timestamp [not null]
+
+  metadata jsonb
+}
+
+Ref: activity_information_record.instrument_id > instrument.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ACCESSION ACTIVITY EXTENSION
+//////////////////////////////////////////////////////////////
+
+Table accession_information {
+  activity_information_record_id uuid [pk]
+
+  accession_number varchar [not null, unique]
+
+  accessioned_at timestamp
+
+  source_organization_agent_id uuid
+
+  received_by_agent_id uuid
+
+  external_specimen_identifier varchar
+
+  shipment_reference varchar
+  transfer_reference varchar
+
+  provenance_status provenance_status [not null]
+
+  source_description text
+
+  metadata jsonb
+
+  Note: '''
+  Activity-specific extension for accession.
+
+  An accession Activity does not require a locally
+  represented input Entity.
+
+  Example:
+
+     unknown external provenance
+               |
+           accession
+               |
+          whole brain
+
+  External identifiers can still be retained without
+  creating artificial upstream entities.
+  '''
+}
+
+Ref: accession_information.activity_information_record_id > activity_information_record.id
+Ref: accession_information.source_organization_agent_id > agent.id
+Ref: accession_information.received_by_agent_id > agent.id
+
+
+
+//////////////////////////////////////////////////////////////
+// EXTERNAL REFERENCES
+//////////////////////////////////////////////////////////////
+
+Table external_reference {
+  id uuid [pk]
+
+  subject_type external_reference_subject [not null]
+
+  // Exactly one is expected to be populated
+  entity_id uuid
+  activity_id uuid
+
+  namespace varchar
+
+  external_id varchar [not null]
+
+  source_system varchar
+  source_organization varchar
+
+  uri varchar
+
+  description text
+
+  created_at timestamp [not null]
+
+  metadata jsonb
+
+  indexes {
+    (namespace, external_id)
+    entity_id
+    activity_id
+  }
+
+  Note: '''
+  Provides traceability to external systems without
+  importing their complete provenance graph.
+
+  Examples:
+
+    hospital pathology accession
+    LIMS identifier
+    collaborator specimen code
+    external imaging study ID
+  '''
+}
+
+Ref: external_reference.entity_id > entity.id
+Ref: external_reference.activity_id > activity.id
+
+
+
+//////////////////////////////////////////////////////////////
+// ENTITY PROVENANCE STATUS
+//////////////////////////////////////////////////////////////
+
+Table entity_provenance {
+  entity_id uuid [pk]
+
+  provenance_status provenance_status [not null]
+
+  provenance_boundary_activity_id uuid
+
+  source_description text
+
+  notes text
+
+  Note: '''
+  Describes completeness of provenance prior to the
+  entity entering the locally managed provenance graph.
+
+  Especially useful for accessioned material.
+  '''
+}
+
+Ref: entity_provenance.entity_id > entity.id
+Ref: entity_provenance.provenance_boundary_activity_id > activity.id
+
+
+
+//////////////////////////////////////////////////////////////
+// OPTIONAL DIRECT ENTITY RELATIONS
+//////////////////////////////////////////////////////////////
+
+Table entity_relation_type {
+  id uuid [pk]
+
+  code varchar [not null, unique]
+
+  name varchar [not null]
+  description text
+
+  Note: '''
+  Useful relation examples:
+
+    part_of
+    same_physical_entity_as
+    derived_from
+    aliquot_of
+    version_of
+
+  These relationships provide convenient traversal,
+  but Activity remains the authoritative process
+  provenance mechanism.
+  '''
+}
+
+
+Table entity_relation {
+  id uuid [pk]
+
+  source_entity_id uuid [not null]
+  target_entity_id uuid [not null]
+
+  entity_relation_type_id uuid [not null]
+
+  activity_id uuid
+
+  created_at timestamp [not null]
+
+  metadata jsonb
+
+  indexes {
+    (
+      source_entity_id,
+      target_entity_id,
+      entity_relation_type_id
+    ) [unique]
+  }
+}
+
+Ref: entity_relation.source_entity_id > entity.id
+Ref: entity_relation.target_entity_id > entity.id
+Ref: entity_relation.entity_relation_type_id > entity_relation_type.id
+Ref: entity_relation.activity_id > activity.id
