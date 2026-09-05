@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.urls import reverse_lazy
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,6 +50,97 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 ]
+
+UNFOLD = {
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Tier 1: Core Provenance",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Entities",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_entity_changelist"),
+                    },
+                    {
+                        "title": "Activities",
+                        "icon": "conversion_path",
+                        "link": reverse_lazy("admin:app1_activity_changelist"),
+                    },
+                    {
+                        "title": "Activity Entities",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_activityentity_changelist"),
+                    },
+                    {
+                        "title": "Entity Information Records",
+                        "icon": "description",
+                        "link": reverse_lazy("admin:app1_entityinformationrecord_changelist"),
+                    },
+                    {
+                        "title": "Activity Information Records",
+                        "icon": "event_note",
+                        "link": reverse_lazy("admin:app1_activityinformationrecord_changelist"),
+                    },
+                    {
+                        "title": "Entity Relations",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_entityrelation_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Tier 2: Vocabularies and Configuration",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Entity Types",
+                        "icon": "category",
+                        "link": reverse_lazy("admin:app1_entitytype_changelist"),
+                    },
+                    {
+                        "title": "Activity Types",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_activitytype_changelist"),
+                    },
+                    {
+                        "title": "Information Record Types",
+                        "icon": "label",
+                        "link": reverse_lazy("admin:app1_informationrecordtype_changelist"),
+                    },
+                    {
+                        "title": "Parameter Definitions",
+                        "icon": "tune",
+                        "link": reverse_lazy("admin:app1_parameterdefinition_changelist"),
+                    },
+                    {
+                        "title": "Protocols",
+                        "icon": "menu_book",
+                        "link": reverse_lazy("admin:app1_protocol_changelist"),
+                    },
+                    {
+                        "title": "Protocol Parameters",
+                        "icon": "tune",
+                        "link": reverse_lazy("admin:app1_protocolparameter_changelist"),
+                    },
+                    {
+                        "title": "Entity Relation Types",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_entityrelationtype_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": "Tier 3: Extensions",
+                "separator": True,
+                "items": [],
+            },
+        ],
+    },
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

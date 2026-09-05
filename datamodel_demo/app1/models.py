@@ -177,7 +177,7 @@ class ActivityParameter(models.Model):
 
     class Meta:
         db_table = 'activity_parameter'
-        db_table_comment = 'Captures actual execution parameters for an activity.\n\nExample:\n\n  fixation_temperature = 4.3 C\n  fixation_duration = 76.2 h\n  formalin_concentration = 10 %\n\nParameter_definition_id is preferred for controlled\nparameters.\n\nparameter_name permits ad-hoc parameters during\nexploratory workflows.\n'
+        db_table_comment = 'Captures actual execution parameters for an activity.\n\nExample:\n\n  fixation_temperature = 4.3 C\n  fixation_duration = 76.2 h\n  formalin_concentration = 10 percent\n\nParameter_definition_id is preferred for controlled\nparameters.\n\nparameter_name permits ad-hoc parameters during\nexploratory workflows.\n'
 
 
 class Protocol(models.Model):
