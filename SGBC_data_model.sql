@@ -1,50 +1,50 @@
 CREATE TABLE `entity_type` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `code` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text,
-  `parent_id` uuid,
+  `parent_id` char(36),
   `ontology_id` varchar(255),
   `ontology_uri` varchar(255),
   `created_at` timestamp NOT NULL
 );
 
 CREATE TABLE `activity_type` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `code` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text,
-  `parent_id` uuid,
+  `parent_id` char(36),
   `ontology_id` varchar(255),
   `ontology_uri` varchar(255),
   `created_at` timestamp NOT NULL
 );
 
 CREATE TABLE `entity` (
-  `id` uuid PRIMARY KEY,
-  `entity_type_id` uuid NOT NULL,
+  `id` char(36) PRIMARY KEY,
+  `entity_type_id` char(36) NOT NULL,
   `identifier` varchar(255) UNIQUE NOT NULL,
-  `physical_identity_id` uuid,
+  `physical_identity_id` char(36),
   `created_at` timestamp NOT NULL
 );
 
 CREATE TABLE `physical_identity` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `identifier` varchar(255) UNIQUE NOT NULL,
   `created_at` timestamp NOT NULL
 );
 
 CREATE TABLE `activity` (
-  `id` uuid PRIMARY KEY,
-  `activity_type_id` uuid NOT NULL,
+  `id` char(36) PRIMARY KEY,
+  `activity_type_id` char(36) NOT NULL,
   `identifier` varchar(255) UNIQUE NOT NULL,
   `created_at` timestamp NOT NULL
 );
 
 CREATE TABLE `activity_entity` (
-  `id` uuid PRIMARY KEY,
-  `activity_id` uuid NOT NULL,
-  `entity_id` uuid NOT NULL,
+  `id` char(36) PRIMARY KEY,
+  `activity_id` char(36) NOT NULL,
+  `entity_id` char(36) NOT NULL,
   `direction` ENUM ('input', 'output') NOT NULL,
   `role` varchar(255),
   `sequence_no` integer,
@@ -52,15 +52,15 @@ CREATE TABLE `activity_entity` (
 );
 
 CREATE TABLE `entity_information_record` (
-  `id` uuid PRIMARY KEY,
-  `entity_id` uuid NOT NULL,
-  `information_record_type_id` uuid,
+  `id` char(36) PRIMARY KEY,
+  `entity_id` char(36) NOT NULL,
+  `information_record_type_id` char(36),
   `version` integer NOT NULL,
   `valid_from` timestamp,
   `valid_until` timestamp,
   `recorded_at` timestamp NOT NULL,
-  `recorded_by_agent_id` uuid,
-  `supersedes_record_id` uuid,
+  `recorded_by_agent_id` char(36),
+  `supersedes_record_id` char(36),
   `name` varchar(255),
   `description` text,
   `status` varchar(255),
@@ -68,7 +68,7 @@ CREATE TABLE `entity_information_record` (
 );
 
 CREATE TABLE `information_record_type` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `code` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text,
@@ -76,27 +76,27 @@ CREATE TABLE `information_record_type` (
 );
 
 CREATE TABLE `activity_information_record` (
-  `id` uuid PRIMARY KEY,
-  `activity_id` uuid NOT NULL,
+  `id` char(36) PRIMARY KEY,
+  `activity_id` char(36) NOT NULL,
   `version` integer NOT NULL,
   `valid_from` timestamp,
   `valid_until` timestamp,
   `recorded_at` timestamp NOT NULL,
-  `recorded_by_agent_id` uuid,
-  `supersedes_record_id` uuid,
+  `recorded_by_agent_id` char(36),
+  `supersedes_record_id` char(36),
   `status` ENUM ('planned', 'in_progress', 'completed', 'failed', 'cancelled'),
   `started_at` timestamp,
   `ended_at` timestamp,
-  `protocol_id` uuid,
-  `operator_agent_id` uuid,
-  `instrument_id` uuid,
+  `protocol_id` char(36),
+  `operator_agent_id` char(36),
+  `instrument_id` char(36),
   `description` text,
   `notes` text,
   `metadata` json
 );
 
 CREATE TABLE `parameter_definition` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `code` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text,
@@ -108,9 +108,9 @@ CREATE TABLE `parameter_definition` (
 );
 
 CREATE TABLE `activity_parameter` (
-  `id` uuid PRIMARY KEY,
-  `activity_information_record_id` uuid NOT NULL,
-  `parameter_definition_id` uuid,
+  `id` char(36) PRIMARY KEY,
+  `activity_information_record_id` char(36) NOT NULL,
+  `parameter_definition_id` char(36),
   `parameter_name` varchar(255),
   `value_text` text,
   `value_integer` bigint,
@@ -124,7 +124,7 @@ CREATE TABLE `activity_parameter` (
 );
 
 CREATE TABLE `protocol` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `identifier` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `version` varchar(255),
@@ -134,9 +134,9 @@ CREATE TABLE `protocol` (
 );
 
 CREATE TABLE `protocol_parameter` (
-  `id` uuid PRIMARY KEY,
-  `protocol_id` uuid NOT NULL,
-  `parameter_definition_id` uuid NOT NULL,
+  `id` char(36) PRIMARY KEY,
+  `protocol_id` char(36) NOT NULL,
+  `parameter_definition_id` char(36) NOT NULL,
   `required` boolean DEFAULT false,
   `default_value_text` text,
   `default_value_decimal` decimal,
@@ -147,7 +147,7 @@ CREATE TABLE `protocol_parameter` (
 );
 
 CREATE TABLE `agent` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `identifier` varchar(255) UNIQUE NOT NULL,
   `agent_type` ENUM ('person', 'organization', 'software', 'service') NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -157,7 +157,7 @@ CREATE TABLE `agent` (
 );
 
 CREATE TABLE `instrument` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `identifier` varchar(255) UNIQUE NOT NULL,
   `instrument_type` varchar(255),
   `manufacturer` varchar(255),
@@ -169,11 +169,11 @@ CREATE TABLE `instrument` (
 );
 
 CREATE TABLE `accession_information` (
-  `activity_information_record_id` uuid PRIMARY KEY,
+  `activity_information_record_id` char(36) PRIMARY KEY,
   `accession_number` varchar(255) UNIQUE NOT NULL,
   `accessioned_at` timestamp,
-  `source_organization_agent_id` uuid,
-  `received_by_agent_id` uuid,
+  `source_organization_agent_id` char(36),
+  `received_by_agent_id` char(36),
   `external_specimen_identifier` varchar(255),
   `shipment_reference` varchar(255),
   `transfer_reference` varchar(255),
@@ -183,10 +183,10 @@ CREATE TABLE `accession_information` (
 );
 
 CREATE TABLE `external_reference` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `subject_type` ENUM ('entity', 'activity') NOT NULL,
-  `entity_id` uuid,
-  `activity_id` uuid,
+  `entity_id` char(36),
+  `activity_id` char(36),
   `namespace` varchar(255),
   `external_id` varchar(255) NOT NULL,
   `source_system` varchar(255),
@@ -198,26 +198,26 @@ CREATE TABLE `external_reference` (
 );
 
 CREATE TABLE `entity_provenance` (
-  `entity_id` uuid PRIMARY KEY,
+  `entity_id` char(36) PRIMARY KEY,
   `provenance_status` ENUM ('complete', 'partial', 'external', 'unavailable', 'unknown') NOT NULL,
-  `provenance_boundary_activity_id` uuid,
+  `provenance_boundary_activity_id` char(36),
   `source_description` text,
   `notes` text
 );
 
 CREATE TABLE `entity_relation_type` (
-  `id` uuid PRIMARY KEY,
+  `id` char(36) PRIMARY KEY,
   `code` varchar(255) UNIQUE NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` text
 );
 
 CREATE TABLE `entity_relation` (
-  `id` uuid PRIMARY KEY,
-  `source_entity_id` uuid NOT NULL,
-  `target_entity_id` uuid NOT NULL,
-  `entity_relation_type_id` uuid NOT NULL,
-  `activity_id` uuid,
+  `id` char(36) PRIMARY KEY,
+  `source_entity_id` char(36) NOT NULL,
+  `target_entity_id` char(36) NOT NULL,
+  `entity_relation_type_id` char(36) NOT NULL,
+  `activity_id` char(36),
   `created_at` timestamp NOT NULL,
   `metadata` json
 );
