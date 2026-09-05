@@ -6,6 +6,7 @@ Source discussion:
 https://chatgpt.com/share/6a9bee09-d694-83ee-aecf-85ab059ac5a2
 
 ## High level ontology
+<pre>
                     ENTITY
                       │
           ┌───────────┼──────────────┐
@@ -26,8 +27,10 @@ https://chatgpt.com/share/6a9bee09-d694-83ee-aecf-85ab059ac5a2
                      ↓
 
                     ENTITY
+</pre>
 
 ### Accessioning 
+
                  ENTITY ORIGIN
                       │
           ┌───────────┼─────────────┐
@@ -42,6 +45,7 @@ https://chatgpt.com/share/6a9bee09-d694-83ee-aecf-85ab059ac5a2
     staining       externally     generated data
 
 ## Activity type
+<pre>
 processing
 ├── extraction
 ├── preservation
@@ -64,11 +68,12 @@ processing
     ├── slide_scanning
     ├── MRI
     └── spatial_transcriptomics
-
+</pre>
 
 ## Information sidecars
 *i want to implement sidecar information records for all entities and also activities. The information record decouples the entity's mutable fields from the immutable ones (which will be attributes in the entity). Also the information record for the activity captures the set of process parameters (name,value pairs)*
 
+<pre>
 ENTITY
     immutable assertion:
     "this thing exists"
@@ -84,9 +89,11 @@ ACTIVITY
 INFORMATION RECORD
     temporal assertion:
     "these are the currently known properties of that event"
+</pre>
 
 Example:
 
+<pre>
 Brain B001
    │
    ├── AnatomicalInformationRecord
@@ -102,7 +109,9 @@ Brain B001
    └── QCInformationRecord
           tissue integrity
           fixation quality
+</pre>
 
+<pre>
                          ┌────────────────────┐
                          │       Entity       │
                          │ immutable identity │
@@ -114,8 +123,9 @@ Brain B001
                     │ Entity Information Record   │
                     │ versioned / mutable state   │
                     └─────────────────────────────┘
+</pre>
 
-
+<pre>
 Entity ── input ──► Activity ── output ──► Entity
                         │
                         │ has information
@@ -129,9 +139,9 @@ Entity ── input ──► Activity ── output ──► Entity
                            ▼
                   Activity Parameter
                   name/value/unit
+</pre>
 
-
-
+<pre>
                    no known input
                         │
                         ▼
@@ -148,11 +158,11 @@ Entity ── input ──► Activity ── output ──► Entity
                         │
                         ▼
              EntityInformationRecord
-
+</pre>
 
 
 ## DB diagram
-
+<pre>
                                Agent
                                  |
                                  |
@@ -165,7 +175,7 @@ EntityInformationRecord       ActivityInformationRecord
                                    |
                                    |
                                Protocol
-
+</pre>
 https://dbdiagram.io/d/SGBC_data_model-6a9bea4f5450bea1bef885bb
 
 
