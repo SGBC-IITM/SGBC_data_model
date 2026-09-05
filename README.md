@@ -216,12 +216,19 @@ and development server from the repository root:
 docker compose up --build
 ```
 
-The Django server is available at http://localhost:8000. Run management
+The Django server is available at http://localhost:8000. Open the admin at
+http://localhost:8000/admin/ and run management
 commands in the web container, for example:
 
 ```bash
 docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
 ```
+
+Run Django management commands through `docker compose exec web` so the
+Compose hostname `db` resolves correctly. If running them directly on the
+host, use `python manage.py ...`; the settings default to `127.0.0.1`, which
+uses the published MySQL port.
 
 The Compose database service includes the MySQL client CLI. To instantiate the
 schema and load the sample data, run these commands from the repository root,
@@ -240,6 +247,18 @@ docker compose exec db mysql -usgbc -psgbc_dev_password sgbc
 
 Stop the services with `docker compose down`. The named `mysql_data` volume
 keeps the database between restarts; use `docker compose down -v` to remove it.
+
+### Generate Django models and admin
+
+After creating the schema, regenerate the unmanaged Django models with:
+
+```bash
+./scripts/inspectdb.sh
+```
+
+The script reads the table names from `SGBC_data_model.sql`, runs `inspectdb`
+inside the web container, writes `datamodel_demo/app1/models.py`, and runs
+`manage.py check`. The models are automatically registered in Django admin.
 
 
 
