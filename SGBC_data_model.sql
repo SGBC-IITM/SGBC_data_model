@@ -64,7 +64,7 @@ CREATE TABLE `entity_information_record` (
   `name` varchar(255),
   `description` text,
   `status` varchar(255),
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `information_record_type` (
@@ -92,7 +92,7 @@ CREATE TABLE `activity_information_record` (
   `instrument_id` uuid,
   `description` text,
   `notes` text,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `parameter_definition` (
@@ -117,10 +117,10 @@ CREATE TABLE `activity_parameter` (
   `value_decimal` decimal,
   `value_boolean` boolean,
   `value_datetime` timestamp,
-  `value_json` jsonb,
+  `value_json` json,
   `unit` varchar(255),
   `sequence_no` integer,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `protocol` (
@@ -153,7 +153,7 @@ CREATE TABLE `agent` (
   `name` varchar(255) NOT NULL,
   `affiliation` varchar(255),
   `created_at` timestamp NOT NULL,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `instrument` (
@@ -165,7 +165,7 @@ CREATE TABLE `instrument` (
   `serial_number` varchar(255),
   `software_version` varchar(255),
   `created_at` timestamp NOT NULL,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `accession_information` (
@@ -179,7 +179,7 @@ CREATE TABLE `accession_information` (
   `transfer_reference` varchar(255),
   `provenance_status` ENUM ('complete', 'partial', 'external', 'unavailable', 'unknown') NOT NULL,
   `source_description` text,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `external_reference` (
@@ -194,7 +194,7 @@ CREATE TABLE `external_reference` (
   `uri` varchar(255),
   `description` text,
   `created_at` timestamp NOT NULL,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE TABLE `entity_provenance` (
@@ -219,7 +219,7 @@ CREATE TABLE `entity_relation` (
   `entity_relation_type_id` uuid NOT NULL,
   `activity_id` uuid,
   `created_at` timestamp NOT NULL,
-  `metadata` jsonb
+  `metadata` json
 );
 
 CREATE UNIQUE INDEX `activity_entity_index_0` ON `activity_entity` (`activity_id`, `entity_id`, `direction`, `role`);
@@ -544,7 +544,10 @@ ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`operator_agent_id`) 
 
 ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`instrument_id`) REFERENCES `instrument` (`id`);
 
-ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`id`) REFERENCES `accession_information` (`activity_information_record_id`);
+-- ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`id`) REFERENCES `accession_information` (`activity_information_record_id`);
+ALTER TABLE `accession_information`
+ADD FOREIGN KEY (`activity_information_record_id`)
+REFERENCES `activity_information_record` (`id`);
 
 ALTER TABLE `accession_information` ADD FOREIGN KEY (`source_organization_agent_id`) REFERENCES `agent` (`id`);
 
@@ -554,7 +557,10 @@ ALTER TABLE `external_reference` ADD FOREIGN KEY (`entity_id`) REFERENCES `entit
 
 ALTER TABLE `external_reference` ADD FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`);
 
-ALTER TABLE `entity` ADD FOREIGN KEY (`id`) REFERENCES `entity_provenance` (`entity_id`);
+-- ALTER TABLE `entity` ADD FOREIGN KEY (`id`) REFERENCES `entity_provenance` (`entity_id`);
+ALTER TABLE `entity_provenance`
+ADD FOREIGN KEY (`entity_id`)
+REFERENCES `entity` (`id`);
 
 ALTER TABLE `entity_provenance` ADD FOREIGN KEY (`provenance_boundary_activity_id`) REFERENCES `activity` (`id`);
 
