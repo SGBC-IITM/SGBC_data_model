@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.apps import apps
 from .models import *
 
 class InformativeModelAdmin(admin.ModelAdmin):
@@ -90,7 +89,6 @@ TIER_2_MODELS = [
     ActivityType,
     InformationRecordType,
     ParameterDefinition,
-    Protocol,
     ProtocolParameter,
     EntityRelationType,
 ]
@@ -105,18 +103,109 @@ class AutoListDisplayMixin:
             field.name
             for field in self.model._meta.fields
         ]
-        return fields[:8]
+        return tuple(
+			"display_parent" if field_name == "parent" else field_name
+			for field_name in fields[:8]
+		)
+
+    @admin.display(description="Parent", ordering="parent")
+    def display_parent(self, obj):
+        return obj.parent.code if obj.parent else "-"
 
 class Tier1Admin(AutoListDisplayMixin, admin.ModelAdmin):
     pass
+
+
+class ActivityInformationRecordInline(admin.StackedInline):
+	model = ActivityInformationRecord
+	extra = 0
+	show_change_link = True
+	fields = (
+		"version",
+		"status",
+		"valid_from",
+		"valid_until",
+		"recorded_at",
+		"recorded_by_agent",
+		"supersedes_record",
+		"protocol",
+		"operator_agent",
+		"started_at",
+		"ended_at",
+		"description",
+		"notes",
+		"metadata",
+	)
+
+
+class ActivityEntityInline(admin.TabularInline):
+	model = ActivityEntity
+	extra = 0
+	show_change_link = True
+	fields = ("entity", "direction", "role", "sequence_no")
+
+
+class EntityInformationRecordInline(admin.StackedInline):
+	model = EntityInformationRecord
+	extra = 0
+	show_change_link = True
+	fields = (
+		"version",
+		"information_record_type",
+		"valid_from",
+		"valid_until",
+		"recorded_at",
+		"recorded_by_agent",
+		"supersedes_record",
+		"name",
+		"description",
+		"status",
+		"metadata",
+	)
+
+
+class ActivityAdmin(Tier1Admin):
+	inlines = (ActivityInformationRecordInline, ActivityEntityInline)
+
+
+class EntityAdmin(Tier1Admin):
+	inlines = (EntityInformationRecordInline,)
 
 
 class Tier2Admin(AutoListDisplayMixin, admin.ModelAdmin):
     pass
 
 
+class ProtocolParameterInline(admin.TabularInline):
+	model = ProtocolParameter
+	extra = 0
+	show_change_link = True
+	fields = (
+		"parameter_definition",
+		"required",
+		"default_value_text",
+		"default_value_decimal",
+		"minimum_value",
+		"maximum_value",
+		"unit",
+		"description",
+	)
+
+
+class ProtocolAdmin(Tier2Admin):
+	inlines = (ProtocolParameterInline,)
+
+
 class Tier3Admin(admin.ModelAdmin):
     pass
 
-for model in apps.get_app_config("app1").get_models():
-	admin.site.register(model)
+admin.site.register(Activity, ActivityAdmin)
+admin.site.register(Entity, EntityAdmin)
+admin.site.register(Protocol, ProtocolAdmin)
+
+for model in TIER_1_MODELS:
+	if model not in (Activity, Entity):
+		admin.site.register(model, Tier1Admin)
+
+for model in TIER_2_MODELS:
+	admin.site.register(model, Tier2Admin)

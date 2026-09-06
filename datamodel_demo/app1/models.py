@@ -15,6 +15,9 @@ class TypeBase(models.Model):
     ontology_uri = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.code
+
     class Meta:
         abstract = True
 
@@ -42,6 +45,8 @@ class Entity(models.Model):
         db_table = 'entity'
         db_table_comment = 'Immutable provenance node representing a biological,\nphysical, or digital entity.\n\nMutable properties such as names, classifications,\nlocations, condition, status, etc. belong in\nentity_information_record.\n\nphysical_identity can associate multiple provenance\nstates with the same physical object.\n\nExample:\n\nfresh brain  -> P001\nfixed brain  -> P001\nfrozen brain -> P001\n\nAfter physical subdivision:\n\nleft hemisphere  -> P002\nright hemisphere -> P003\n'
 
+    def __str__(self):
+        return self.identifier
 
 class Activity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
@@ -53,6 +58,8 @@ class Activity(models.Model):
         db_table = 'activity'
         db_table_comment = 'Immutable provenance event.\n\nActivity execution details are stored in\nactivity_information_record.\n\nActivities may have zero inputs or zero outputs.\n\nExample:\n  accession: 0 -> N\n  fixation:   N -> N\n  disposal:   N -> 0\n'
 
+    def __str__(self):
+        return self.identifier
 
 class ActivityEntity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
@@ -107,6 +114,8 @@ class InformationRecordType(models.Model):
         db_table = 'information_record_type'
         db_table_comment = 'Allows independent information sidecars.\n\nExamples:\n\n  general\n  anatomical\n  storage\n  quality_control\n  custody\n  clinical_annotation\n  imaging\n'
 
+    def __str__(self):
+        return self.code
 
 class ActivityInformationRecord(InformationRecordBase):
     activity = models.ForeignKey(Activity, models.DO_NOTHING)
@@ -138,6 +147,8 @@ class ParameterDefinition(models.Model):
         db_table = 'parameter_definition'
         db_table_comment = 'Controlled definition of reusable process parameters.\n\nExamples:\n\n  fixation_temperature\n  fixation_duration\n  fixative_concentration\n  section_thickness\n  scanner_resolution\n  laser_power\n'
 
+    def __str__(self):
+        return self.code
 
 class ActivityParameter(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
@@ -203,6 +214,8 @@ class Agent(models.Model):
         db_table = 'agent'
         db_table_comment = 'An Agent may be:\n\n  person\n  organization\n  software\n  service\n\nThis permits both wet-lab and computational provenance.\n'
 
+    def __str__(self):
+        return self.identifier
 
 class AccessionInformation(models.Model):
     activity_information_record = models.OneToOneField(ActivityInformationRecord, models.DO_NOTHING, primary_key=True)
@@ -263,6 +276,8 @@ class EntityRelationType(models.Model):
         db_table = 'entity_relation_type'
         db_table_comment = 'Useful relation examples:\n\n  part_of\n  same_physical_entity_as\n  derived_from\n  aliquot_of\n  version_of\n\nThese relationships provide convenient traversal,\nbut Activity remains the authoritative process\nprovenance mechanism.\n'
 
+    def __str__(self):
+        return self.code
 
 class EntityRelation(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
