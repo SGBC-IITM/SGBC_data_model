@@ -270,7 +270,7 @@ class EntityRelation(models.Model):
     target_entity = models.ForeignKey(Entity, models.DO_NOTHING, related_name='entityrelation_target_entity_set')
     entity_relation_type = models.ForeignKey(EntityRelationType, models.DO_NOTHING)
     activity = models.ForeignKey(Activity, models.DO_NOTHING, blank=True, null=True)
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(blank=True, null=True)
 
     class Meta:
