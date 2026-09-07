@@ -10,10 +10,11 @@ class TypeBase(models.Model):
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    parent = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    parent = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, related_name='children')
     ontology_id = models.CharField(max_length=255, blank=True, null=True)
     ontology_uri = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_instantiable = models.BooleanField(default=True, help_text="Whether entities may be directly assigned this type.",)
 
     def __str__(self):
         return self.code
@@ -36,11 +37,20 @@ class ActivityType(TypeBase):
 
 class Entity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
-    entity_type = models.ForeignKey(EntityType, models.DO_NOTHING)
+    entity_type = models.ForeignKey(EntityType, models.PROTECT, related_name="entities")
     identifier = models.CharField(unique=True, max_length=255)
-    physical_identity = models.CharField(max_length=255, blank=True, null=True)
+    physical_identity = models.CharField(max_length=255, blank=True, null=True, on_delete=models.PROTECT, related_name="entities")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # def clean(self):
+    #     super().clean()
+
+    #     if self.entity_type and not self.entity_type.is_instantiable:
+    #         raise ValidationError({
+    #             "entity_type":
+    #                 "Entities cannot be assigned an abstract entity type."
+    #         })
+        
     class Meta:
         db_table = 'entity'
         db_table_comment = 'Immutable provenance node representing a biological,\nphysical, or digital entity.\n\nMutable properties such as names, classifications,\nlocations, condition, status, etc. belong in\nentity_information_record.\n\nphysical_identity can associate multiple provenance\nstates with the same physical object.\n\nExample:\n\nfresh brain  -> P001\nfixed brain  -> P001\nfrozen brain -> P001\n\nAfter physical subdivision:\n\nleft hemisphere  -> P002\nright hemisphere -> P003\n'
@@ -50,10 +60,23 @@ class Entity(models.Model):
 
 class Activity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
-    activity_type = models.ForeignKey(ActivityType, models.DO_NOTHING)
+    activity_type = models.ForeignKey(ActivityType, models.PROTECT, related_name="activities")
     identifier = models.CharField(unique=True, max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def inputs(self):
+        return Entity.objects.filter(
+            activity_links__activity=self,
+            activity_links__direction="input",
+        )
+
+    @property
+    def outputs(self):
+        return Entity.objects.filter(
+            activity_links__activity=self,
+            activity_links__direction="output",
+        )
     class Meta:
         db_table = 'activity'
         db_table_comment = 'Immutable provenance event.\n\nActivity execution details are stored in\nactivity_information_record.\n\nActivities may have zero inputs or zero outputs.\n\nExample:\n  accession: 0 -> N\n  fixation:   N -> N\n  disposal:   N -> 0\n'
@@ -63,8 +86,8 @@ class Activity(models.Model):
 
 class ActivityEntity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
-    activity = models.ForeignKey(Activity, models.DO_NOTHING)
-    entity = models.ForeignKey(Entity, models.DO_NOTHING)
+    activity = models.ForeignKey(Activity, models.CASCADE, related_name='entity_links')
+    entity = models.ForeignKey(Entity, models.PROTECT, related_name='activity_links')
     direction = models.CharField(max_length=6)
     role = models.CharField(max_length=255, blank=True, null=True)
     sequence_no = models.IntegerField(blank=True, null=True)
@@ -92,8 +115,8 @@ class InformationRecordBase(models.Model):
 
 
 class EntityInformationRecord(InformationRecordBase):
-    entity = models.ForeignKey(Entity, models.DO_NOTHING)
-    information_record_type = models.ForeignKey('InformationRecordType', models.DO_NOTHING, blank=True, null=True)
+    entity = models.ForeignKey(Entity, models.Cascade, related_name='information_records')
+    information_record_type = models.ForeignKey('InformationRecordType', models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=255, blank=True, null=True)
 
@@ -118,7 +141,7 @@ class InformationRecordType(models.Model):
         return self.code
 
 class ActivityInformationRecord(InformationRecordBase):
-    activity = models.ForeignKey(Activity, models.DO_NOTHING)
+    activity = models.ForeignKey(Activity, models.CASCADE, related_name='information_records')
     status = models.CharField(max_length=11, blank=True, null=True)
     started_at = models.DateTimeField(blank=True, null=True)
     ended_at = models.DateTimeField(blank=True, null=True)

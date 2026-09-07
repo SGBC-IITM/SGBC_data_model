@@ -102,6 +102,31 @@ processing
     └── spatial_transcriptomics
 </pre>
 
+## Activity is Multi-input multi-output 
+
+0 → N    accession/source
+1 → 1    fixation
+1 → N    sectioning/slabbing
+N → 1    pooling/merging
+N → N    registration, fusion, multiplexed processing
+N → 0    disposal/transfer-out
+
+## Abstract, concrete, materialized
+
+| EntityType         | Concrete? | Tier-3 materialized? |
+| ------------------ | --------: | -------------------: |
+| BiologicalMaterial |        No |                   No |
+| Biospecimen        |        No |                   No |
+| WholeBrain         |       Yes |                  Yes |
+| TissueBlock        |       Yes |                  Yes |
+| Section            |       Yes |                  Yes |
+| ReagentLot         |       Yes |                   No |
+| DigitalArtifact    |        No |                   No |
+| WSI                |       Yes |                  Yes |
+| QCImage            |       Yes |                   No |
+
+
+
 ## Information sidecars
 *i want to implement sidecar information records for all entities and also activities. The information record decouples the entity's mutable fields from the immutable ones (which will be attributes in the entity). Also the information record for the activity captures the set of process parameters (name,value pairs)*
 
