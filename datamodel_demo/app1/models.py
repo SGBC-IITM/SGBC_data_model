@@ -34,12 +34,50 @@ class ActivityType(TypeBase):
         db_table = 'activity_type'
         db_table_comment = 'Hierarchical vocabulary of activities.\n\nExample hierarchy:\n\nacquisition\n  accession\n  extraction\n\npreservation\n  perfusion\n  fixation\n  cryoprotection\n  freezing\n  storage\n\nprocessing\n  dissection\n  slabbing\n  sectioning\n  mounting\n  staining\n\nimaging\n  slide_scanning\n  MRI\n  microscopy\n\ncomputational_processing\n  registration\n  normalization\n  segmentation\n  feature_extraction\n'
 
+class ActivityTypePort(models.Model):
+    class Direction(models.TextChoices):
+        INPUT = "input", "Input"
+        OUTPUT = "output", "Output"
+
+    activity_type = models.ForeignKey(
+        ActivityType,
+        on_delete=models.CASCADE,
+        related_name="ports",
+    )
+
+    name = models.SlugField(max_length=100)
+
+    direction = models.CharField(
+        max_length=10,
+        choices=Direction.choices,
+    )
+
+    entity_type = models.ForeignKey(
+        EntityType,
+        on_delete=models.PROTECT,
+    )
+
+    min_count = models.PositiveIntegerField(default=1)
+
+    max_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Null means unbounded.",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["activity_type", "name"],
+                name="unique_port_per_activity_type",
+            )
+        ]
 
 class Entity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
-    entity_type = models.ForeignKey(EntityType, models.PROTECT, related_name="entities")
+    entity_type = models.ForeignKey(EntityType, on_delete=models.PROTECT, related_name="entities")
     identifier = models.CharField(unique=True, max_length=255)
-    physical_identity = models.CharField(max_length=255, blank=True, null=True, on_delete=models.PROTECT, related_name="entities")
+    physical_identity = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     # def clean(self):
@@ -84,18 +122,25 @@ class Activity(models.Model):
     def __str__(self):
         return self.identifier
 
+
 class ActivityEntity(models.Model):
     id = models.CharField(primary_key=True, max_length=36)
     activity = models.ForeignKey(Activity, models.CASCADE, related_name='entity_links')
     entity = models.ForeignKey(Entity, models.PROTECT, related_name='activity_links')
-    direction = models.CharField(max_length=6)
-    role = models.CharField(max_length=255, blank=True, null=True)
+    # direction = models.CharField(max_length=6)
+    # role = models.CharField(max_length=255, blank=True, null=True)
+    port = models.ForeignKey(
+            ActivityTypePort,
+            on_delete=models.PROTECT,
+            related_name="links",
+        )
     sequence_no = models.IntegerField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'activity_entity'
-        unique_together = (('activity', 'entity', 'direction', 'role'),)
+        unique_together = (('activity', 'entity', 'port'),)
         db_table_comment = 'Junction table implementing the provenance graph:\n\n     Entity -> Activity -> Entity\n\nNo database constraint requires an activity to have an\ninput. This intentionally supports accession activities.\n'
 
 
@@ -115,7 +160,7 @@ class InformationRecordBase(models.Model):
 
 
 class EntityInformationRecord(InformationRecordBase):
-    entity = models.ForeignKey(Entity, models.Cascade, related_name='information_records')
+    entity = models.ForeignKey(Entity, models.CASCADE, related_name='information_records')
     information_record_type = models.ForeignKey('InformationRecordType', models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=255, blank=True, null=True)

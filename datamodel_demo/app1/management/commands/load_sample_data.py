@@ -12,6 +12,7 @@ from app1.models import (
     ActivityInformationRecord,
     ActivityParameter,
     ActivityType,
+    ActivityTypePort,
     Agent,
     Entity,
     EntityInformationRecord,
@@ -24,6 +25,13 @@ from app1.models import (
     ParameterDefinition,
     Protocol,
     ProtocolParameter,
+)
+from app1.views import (
+    create_activity,
+    create_activity_information_record,
+    ensure_activity_port,
+    link_activity_entities,
+    log_activity_parameters,
 )
 
 
@@ -126,7 +134,7 @@ class Command(BaseCommand):
             ActivityInformationRecord, ActivityEntity, EntityRelation,
             EntityProvenance, ExternalReference, ProtocolParameter, Entity,
             Activity, Protocol, ParameterDefinition, Agent, InformationRecordType,
-            EntityRelationType, EntityType, ActivityType,
+            EntityRelationType, EntityType, ActivityTypePort, ActivityType,
         ):
             model.objects.all().delete()
 
@@ -217,7 +225,11 @@ class Command(BaseCommand):
         ]
         activities = {}
         for identifier, type_code, activity_identifier in rows:
-            activity = put(Activity, identifier, activity_type=types[type_code], identifier=activity_identifier)
+            activity = create_activity(
+                types[type_code],
+                activity_id=sample_uuid(identifier),
+                identifier=activity_identifier,
+            )
             activities[identifier] = activity
             activities[normalize_key(identifier)] = activity
         return activities
@@ -245,7 +257,21 @@ class Command(BaseCommand):
             ("b0000000-0000-0000-0000-000000000019", "a0000000-0000-0000-0000-000000000008", "90000000-0000-0000-0000-000000000051", "output", "segmentation_mask", 1),
         ]
         for identifier, activity_id, entity_id, direction, role, sequence_no in rows:
-            put(ActivityEntity, identifier, activity=activities[activity_id], entity=entities[entity_id], direction=direction, role=role, sequence_no=sequence_no)
+            activity = activities[activity_id]
+            entity = entities[entity_id]
+            port = ensure_activity_port(
+                activity.activity_type,
+                name=role,
+                direction=direction,
+                entity_type=entity.entity_type,
+            )
+            link_activity_entities(
+                activity,
+                port,
+                [entity],
+                sequence_start=sequence_no,
+                link_ids=[sample_uuid(identifier)],
+            )
 
     def load_entity_records(self, entities, record_types, agents):
         rows = [
@@ -276,7 +302,18 @@ class Command(BaseCommand):
         records = {}
         for identifier, activity_id, status, protocol_code, description, notes in rows:
             supersedes = "d0000000-0000-0000-0000-000000000002" if identifier.endswith("003") else None
-            record = put(ActivityInformationRecord, identifier, activity=activities[normalize_key(activity_id)], version=2 if supersedes else 1, recorded_at=NOW, recorded_by_agent=agents["USR-SCI-001"], supersedes_record=ActivityInformationRecord.objects.filter(pk=sample_uuid(supersedes)).first() if supersedes else None, status=status, protocol=protocols.get(protocol_code), description=description, notes=notes)
+            record = create_activity_information_record(
+                activities[normalize_key(activity_id)],
+                record_id=sample_uuid(identifier),
+                version=2 if supersedes else 1,
+                recorded_at=NOW,
+                recorded_by_agent=agents["USR-SCI-001"],
+                supersedes_record=ActivityInformationRecord.objects.filter(pk=sample_uuid(supersedes)).first() if supersedes else None,
+                status=status,
+                protocol=protocols.get(protocol_code),
+                description=description,
+                notes=notes,
+            )
             records[identifier] = record
             records[normalize_key(identifier)] = record
         return records
@@ -298,8 +335,22 @@ class Command(BaseCommand):
             ("e0000000-0000-0000-0000-000000000010", "d0000000-0000-0000-0000-000000000009", "model_name", "Demo U-Net", None, None),
             ("e0000000-0000-0000-0000-000000000011", "d0000000-0000-0000-0000-000000000009", "model_version", "0.1", None, None),
         ]
+        parameters_by_record = {}
         for identifier, record_id, definition_code, text, decimal, unit in rows:
-            put(ActivityParameter, identifier, activity_information_record=records[normalize_key(record_id)], parameter_definition=definitions[definition_code], value_text=text, value_decimal=decimal, unit=unit)
+            parameters_by_record.setdefault(
+                normalize_key(record_id), {}
+            )[definitions[definition_code]] = (
+                text if text is not None else decimal
+            )
+
+        for record_id, parameters in parameters_by_record.items():
+            record = records[record_id]
+            log_activity_parameters(
+                record.activity,
+                parameters,
+                record=record,
+                replace=True,
+            )
 
     def load_external_references(self, entities, activities):
         put(ExternalReference, "f0000000-0000-0000-0000-000000000001", subject_type="entity", entity=entities["90000000-0000-0000-0000-000000000001"], namespace="external_pathology", external_id="EXT-BRAIN-7842", source_system="External Pathology LIMS", source_organization="External Neuropathology Centre", description="External specimen identifier retained at accession")

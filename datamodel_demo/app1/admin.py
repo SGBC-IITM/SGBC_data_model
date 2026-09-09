@@ -1,7 +1,8 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from .models import *
 
-class InformativeModelAdmin(admin.ModelAdmin):
+class InformativeModelAdmin(ModelAdmin):
 	"""Choose useful columns for generated models without per-model classes."""
 
 	preferred_fields = (
@@ -112,7 +113,7 @@ class AutoListDisplayMixin:
     def display_parent(self, obj):
         return obj.parent.code if obj.parent else "-"
 
-class Tier1Admin(AutoListDisplayMixin, admin.ModelAdmin):
+class Tier1Admin(AutoListDisplayMixin, ModelAdmin):
     pass
 
 
@@ -172,7 +173,7 @@ class EntityAdmin(Tier1Admin):
 	inlines = (EntityInformationRecordInline,)
 
 
-class Tier2Admin(AutoListDisplayMixin, admin.ModelAdmin):
+class Tier2Admin(AutoListDisplayMixin, ModelAdmin):
     pass
 
 
@@ -196,7 +197,7 @@ class ProtocolAdmin(Tier2Admin):
 	inlines = (ProtocolParameterInline,)
 
 
-class Tier3Admin(admin.ModelAdmin):
+class Tier3Admin(ModelAdmin):
     pass
 
 admin.site.register(Activity, ActivityAdmin)

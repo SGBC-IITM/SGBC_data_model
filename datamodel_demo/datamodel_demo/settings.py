@@ -52,6 +52,8 @@ INSTALLED_APPS = [
 ]
 
 UNFOLD = {
+    "SITE_TITLE": "SGBC Data Model Demo",
+    
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": False,
