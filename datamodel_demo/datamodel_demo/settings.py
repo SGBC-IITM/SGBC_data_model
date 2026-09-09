@@ -109,6 +109,11 @@ UNFOLD = {
                         "link": reverse_lazy("admin:app1_activitytype_changelist"),
                     },
                     {
+                        "title": "Activity Type Ports",
+                        "icon": "account_tree",
+                        "link": reverse_lazy("admin:app1_activitytypeport_changelist"),
+                    },
+                    {
                         "title": "Information Record Types",
                         "icon": "label",
                         "link": reverse_lazy("admin:app1_informationrecordtype_changelist"),

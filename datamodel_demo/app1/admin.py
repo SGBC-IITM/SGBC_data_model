@@ -88,6 +88,7 @@ TIER_1_MODELS = [
 TIER_2_MODELS = [
     EntityType,
     ActivityType,
+	ActivityTypePort,
     InformationRecordType,
     ParameterDefinition,
     ProtocolParameter,
@@ -143,7 +144,7 @@ class ActivityEntityInline(admin.TabularInline):
 	model = ActivityEntity
 	extra = 0
 	show_change_link = True
-	fields = ("entity", "direction", "role", "sequence_no")
+	fields = ("entity", "port", "sequence_no")
 
 
 class EntityInformationRecordInline(admin.StackedInline):
