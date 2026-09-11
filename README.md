@@ -30,6 +30,19 @@ docker compose exec web python manage.py check
 
 The legacy conceptual DBML and SQL artifacts remain in the repository for
 reference.
+
+## Schema utilities
+
+Use `app1.utils` to create validated entities and activities, append information
+records, traverse provenance, query/group by type, and validate existing entries.
+See [the utility API and examples](docs/schema_utilities.md).
+
+Run local tests without a database service:
+
+```bash
+cd datamodel_demo
+python manage.py test app1 --settings=datamodel_demo.test_settings
+```
 # SGBC_data_model
 
 *I want to make a data model including biospecimen and biosample, which models relationships through the abstraction of Activity - eg in post mortem whole brain histology, the biospecimen is the donor, and the activity of extraction produces the biosample 'brain'. Now the biosample can again be acted upon, like perfusion, fixation, freezing, storing, etc, each producing an artifact. I want to model this using dbml*
@@ -309,6 +322,5 @@ keeps the database between restarts; use `docker compose down -v` to remove it.
 The script reads the table names from `SGBC_data_model.sql`, runs `inspectdb`
 inside the web container, writes `datamodel_demo/app1/models.py`, and runs
 `manage.py check`. The models are automatically registered in Django admin.
-
 
 

@@ -25,8 +25,8 @@ from app1.models import (
     Protocol,
     ProtocolParameter,
 )
-from app1.views import (
-    create_activity,
+from app1.utils import (
+    create_activity_node,
     create_activity_information_record,
     ensure_activity_port,
     link_activity_entities,
@@ -233,7 +233,7 @@ class Command(BaseCommand):
         ]
         activities = {}
         for identifier, type_code, activity_identifier in rows:
-            activity = create_activity(
+            activity = create_activity_node(
                 types[type_code],
                 identifier=activity_identifier,
             )

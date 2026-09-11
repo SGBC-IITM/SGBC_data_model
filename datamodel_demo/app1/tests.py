@@ -11,7 +11,7 @@ from .models import (
 	ActivityType,
 	ParameterDefinition,
 )
-from .views import log_activity_parameters
+from .utils import create_activity_node, log_activity_parameters
 
 class LogActivityParametersTests(TestCase):
 	def setUp(self):
@@ -62,3 +62,9 @@ class LogActivityParametersTests(TestCase):
 			2,
 		)
 		self.assertEqual(ActivityParameter.objects.count(), 2)
+
+	def test_creating_activity_without_id_preserves_existing_activity(self):
+		second = create_activity_node(self.activity.activity_type, identifier="FIX-002")
+		self.activity.refresh_from_db()
+		self.assertNotEqual(second.pk, self.activity.pk)
+		self.assertEqual(self.activity.identifier, "FIX-001")

@@ -103,15 +103,15 @@ class Activity(models.Model):
     def inputs(self):
         return Entity.objects.filter(
             activity_links__activity=self,
-            activity_links__direction="input",
-        )
+            activity_links__port__direction="input",
+        ).distinct()
 
     @property
     def outputs(self):
         return Entity.objects.filter(
             activity_links__activity=self,
-            activity_links__direction="output",
-        )
+            activity_links__port__direction="output",
+        ).distinct()
     class Meta:
         db_table = 'activity'
         db_table_comment = 'Immutable provenance event.\n\nActivity execution details are stored in\nactivity_information_record.\n\nActivities may have zero inputs or zero outputs.\n\nExample:\n  accession: 0 -> N\n  fixation:   N -> N\n  disposal:   N -> 0\n'
