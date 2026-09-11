@@ -17,7 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from app1.views import graph_data, graph_explorer
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("graph/", graph_explorer, name="graph-explorer"),
+    path("api/graph/", graph_data, name="graph-data"),
 ]
