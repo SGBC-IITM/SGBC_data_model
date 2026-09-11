@@ -76,3 +76,15 @@ ISA OntologyAnnotation
 VocabularyTerm
 </pre>
 
+## Model rationale
+
+| Area | Models | Reasoning |
+|---|---|---|
+| Identity and provenance | `Entity`, `Activity`, `ActivityEntity` | Track things and the processes connecting them; support multiple inputs and outputs. |
+| Classification and structure | `EntityType`, `ActivityType`, `ActivityTypePort` | Describe kinds of things and operations, plus named input/output roles, entity types, and counts. |
+| Versioned knowledge | `EntityInformationRecord`, `ActivityInformationRecord` | Keep descriptive changes and corrections separate from core identities. Shared fields include version, validity dates, recording agent, and superseded record. |
+| Entity information categories | `InformationRecordType`, `EntityTypeRecordSlot` | Describe sidecars such as anatomy, storage, or QC and their applicability to entity types. |
+| Procedures and measurements | `Protocol`, `ProtocolParameter`, `ParameterDefinition`, `ActivityParameter` | Separate expected procedure settings from recorded execution values, using shared parameter definitions. |
+| Responsibility | `Agent` | Identify people, organizations, software, or services; distinguish the operator from whoever recorded the information. |
+| External provenance | `AccessionInformation`, `ExternalReference`, `EntityProvenance` | Record incoming material and external identifiers without inventing unknown upstream events. |
+| Additional relationships | `EntityRelation`, `EntityRelationType` | Express links such as `part_of`; activities remain the authoritative description of processing history. |

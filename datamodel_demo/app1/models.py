@@ -139,6 +139,7 @@ class ActivityEntity(models.Model):
         unique_together = (('activity', 'entity', 'port'),)
         db_table_comment = 'Junction table implementing the provenance graph:\n\n     Entity -> Activity -> Entity\n\nNo database constraint requires an activity to have an\ninput. This intentionally supports accession activities.\n'
 
+#---
 
 class InformationRecordBase(models.Model):
     version = models.IntegerField()
@@ -169,6 +170,18 @@ class EntityInformationRecord(InformationRecordBase):
 class InformationRecordType(models.Model):
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="children",
+    )
+
+    is_instantiable = models.BooleanField(
+        default=True,
+    )
+
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -178,6 +191,46 @@ class InformationRecordType(models.Model):
 
     def __str__(self):
         return self.code
+
+class EntityTypeRecordSlot(models.Model):
+    entity_type = models.ForeignKey(
+        EntityType,
+        on_delete=models.CASCADE,
+        related_name="information_rules",
+    )
+
+    record_type = models.ForeignKey(
+        InformationRecordType,
+        on_delete=models.PROTECT,
+        related_name="entity_type_rules",
+    )
+
+    min_count = models.PositiveIntegerField(
+        default=0,
+    )
+
+    max_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    class MatchMode(models.TextChoices):
+        EXACT = "exact", "Exact type"
+        DESCENDANTS = "descendants", "Type or descendants"
+
+    match_mode = models.CharField(
+        max_length=20,
+        choices=MatchMode.choices,
+        default=MatchMode.EXACT,
+        )
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entity_type", "record_type"],
+                name="unique_entity_information_rule",
+            )
+        ]
 
 class ActivityInformationRecord(InformationRecordBase):
     activity = models.ForeignKey(Activity, models.CASCADE, related_name='information_records')
@@ -192,6 +245,7 @@ class ActivityInformationRecord(InformationRecordBase):
         db_table = 'activity_information_record'
         unique_together = (('activity', 'version'),)
         db_table_comment = 'Versioned sidecar describing Activity execution.\n\nThe Activity establishes that an event exists.\nThis record captures what is currently known\nabout that event.\n\nIncludes execution details such as:\n  timing\n  operator\n  protocol\n  status\n  notes\n\nProcess parameters are stored separately in\nactivity_parameter.\n'
+
 
 
 class ParameterDefinition(models.Model):

@@ -217,6 +217,16 @@ Entity ── input ──► Activity ── output ──► Entity
              EntityInformationRecord
 </pre>
 
+## Information schema
+
+| Model | What it represents | Example |
+|---|---|---|
+| `ActivityType` | Category of operation | Fixation |
+| `Activity` | One specific event | Fixation event `FIX-001` |
+| `Protocol` | Intended procedure, with a version | Whole Brain Fixation, v1.0 |
+| `ActivityInformationRecord` | Recorded details of that event | Protocol used, operator, timing, status |
+| `ProtocolParameter` | Expected parameters | Target duration: 72 hours |
+| `ActivityParameter` | Actual execution parameters | Recorded duration: 76 hours |
 
 ## DB diagram
 <pre>
