@@ -16,17 +16,14 @@ from .views import log_activity_parameters
 class LogActivityParametersTests(TestCase):
 	def setUp(self):
 		activity_type = ActivityType.objects.create(
-			id="activity-type",
 			code="fixation",
 			name="Fixation",
 		)
 		self.activity = Activity.objects.create(
-			id="activity",
 			activity_type=activity_type,
 			identifier="FIX-001",
 		)
 		ParameterDefinition.objects.create(
-			id="temperature",
 			code="temperature",
 			name="Temperature",
 			datatype="decimal",

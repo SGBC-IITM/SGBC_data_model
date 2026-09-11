@@ -6,7 +6,6 @@ from django.db import models
 
 
 class TypeBase(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -14,7 +13,7 @@ class TypeBase(models.Model):
     ontology_id = models.CharField(max_length=255, blank=True, null=True)
     ontology_uri = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_instantiable = models.BooleanField(default=True, help_text="Whether entities may be directly assigned this type.",)
+    is_instantiable = models.BooleanField(default=False, help_text="Whether entities may be directly assigned this type.",)
 
     def __str__(self):
         return self.code
@@ -74,7 +73,6 @@ class ActivityTypePort(models.Model):
         ]
 
 class Entity(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     entity_type = models.ForeignKey(EntityType, on_delete=models.PROTECT, related_name="entities")
     identifier = models.CharField(unique=True, max_length=255)
     physical_identity = models.CharField(max_length=255, blank=True, null=True)
@@ -97,7 +95,6 @@ class Entity(models.Model):
         return self.identifier
 
 class Activity(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     activity_type = models.ForeignKey(ActivityType, models.PROTECT, related_name="activities")
     identifier = models.CharField(unique=True, max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -124,7 +121,6 @@ class Activity(models.Model):
 
 
 class ActivityEntity(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     activity = models.ForeignKey(Activity, models.CASCADE, related_name='entity_links')
     entity = models.ForeignKey(Entity, models.PROTECT, related_name='activity_links')
     # direction = models.CharField(max_length=6)
@@ -145,7 +141,6 @@ class ActivityEntity(models.Model):
 
 
 class InformationRecordBase(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     version = models.IntegerField()
     valid_from = models.DateTimeField(blank=True, null=True)
     valid_until = models.DateTimeField(blank=True, null=True)
@@ -172,7 +167,6 @@ class EntityInformationRecord(InformationRecordBase):
 
 
 class InformationRecordType(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -201,7 +195,6 @@ class ActivityInformationRecord(InformationRecordBase):
 
 
 class ParameterDefinition(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -219,7 +212,6 @@ class ParameterDefinition(models.Model):
         return self.code
 
 class ActivityParameter(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     activity_information_record = models.ForeignKey(ActivityInformationRecord, models.DO_NOTHING)
     parameter_definition = models.ForeignKey(ParameterDefinition, models.DO_NOTHING, blank=True, null=True)
     parameter_name = models.CharField(max_length=255, blank=True, null=True)
@@ -239,7 +231,6 @@ class ActivityParameter(models.Model):
 
 
 class Protocol(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     identifier = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     version = models.CharField(max_length=255, blank=True, null=True)
@@ -253,7 +244,6 @@ class Protocol(models.Model):
 
 
 class ProtocolParameter(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     protocol = models.ForeignKey(Protocol, models.DO_NOTHING)
     parameter_definition = models.ForeignKey(ParameterDefinition, models.DO_NOTHING)
     required = models.IntegerField(blank=True, null=True)
@@ -270,7 +260,6 @@ class ProtocolParameter(models.Model):
 
 
 class Agent(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     identifier = models.CharField(unique=True, max_length=255)
     agent_type = models.CharField(max_length=12)
     name = models.CharField(max_length=255)
@@ -304,7 +293,6 @@ class AccessionInformation(models.Model):
 
 
 class ExternalReference(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     subject_type = models.CharField(max_length=8)
     entity = models.ForeignKey(Entity, models.DO_NOTHING, blank=True, null=True)
     activity = models.ForeignKey(Activity, models.DO_NOTHING, blank=True, null=True)
@@ -335,7 +323,6 @@ class EntityProvenance(models.Model):
 
 
 class EntityRelationType(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     code = models.CharField(unique=True, max_length=255)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
@@ -348,7 +335,6 @@ class EntityRelationType(models.Model):
         return self.code
 
 class EntityRelation(models.Model):
-    id = models.CharField(primary_key=True, max_length=36)
     source_entity = models.ForeignKey(Entity, models.DO_NOTHING)
     target_entity = models.ForeignKey(Entity, models.DO_NOTHING, related_name='entityrelation_target_entity_set')
     entity_relation_type = models.ForeignKey(EntityRelationType, models.DO_NOTHING)

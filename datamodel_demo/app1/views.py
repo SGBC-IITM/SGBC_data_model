@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
 from collections.abc import Mapping
-from uuid import uuid4
 
 from django.shortcuts import render
 
@@ -77,7 +76,7 @@ def create_activity_information_record(
         version = last_record.version + 1 if last_record else 1
 
     return ActivityInformationRecord.objects.update_or_create(
-        pk=record_id or str(uuid4()),
+        **({"pk": record_id} if record_id is not None else {}),
         defaults={
             "activity": activity,
             "version": version,
@@ -120,7 +119,6 @@ def log_activity_parameters(
         values = _parameter_values(value)
         parameter_rows.append(
             ActivityParameter(
-                id=str(uuid4()),
                 activity_information_record=record,
                 parameter_definition=definition,
                 parameter_name=None if definition else str(parameter),
@@ -144,7 +142,7 @@ def create_activity(
         activity_type = ActivityType.objects.get(code=activity_type)
 
     return Activity.objects.update_or_create(
-        pk=activity_id or str(uuid4()),
+        **({"pk": activity_id} if activity_id is not None else {}),
         defaults={
             "activity_type": activity_type,
             "identifier": identifier,
@@ -190,13 +188,15 @@ def link_activity_entities(
             "port": port,
             "sequence_no": sequence_start + sequence,
         }
-        link_id = link_ids[sequence] if link_ids else str(uuid4())
-        links.append(
-            ActivityEntity.objects.update_or_create(
-                pk=link_id,
-                defaults=defaults,
-            )[0]
-        )
+        if link_ids:
+            links.append(
+                ActivityEntity.objects.update_or_create(
+                    pk=link_ids[sequence],
+                    defaults=defaults,
+                )[0]
+            )
+        else:
+            links.append(ActivityEntity.objects.create(**defaults))
     return links
 
 @transaction.atomic
@@ -266,3 +266,38 @@ def log_activity(
         )
 
     return activity
+
+
+#%--
+import hashlib
+import secrets
+import time
+
+ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"
+
+def make_token(length=10):
+    return "".join(
+        secrets.choice(ALPHABET)
+        for _ in range(length)
+    )
+
+def deterministic_token(user_id, timestamp, namespace, length=10):
+    material = f"{namespace}:{user_id}:{timestamp}".encode()
+    return hashlib.sha256(material).hexdigest()[:length].upper()
+
+# def make_token(user_id, length=10):
+#     material = (
+#         f"{time.time_ns()}:{user_id}:{secrets.token_hex(16)}"
+#     ).encode()
+
+#     digest = hashlib.sha256(material).digest()
+
+#     value = int.from_bytes(digest, "big")
+
+#     chars = []
+#     for _ in range(length):
+#         value, remainder = divmod(value, len(ALPHABET))
+#         chars.append(ALPHABET[remainder])
+
+#     return "".join(chars)
+

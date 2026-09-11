@@ -171,6 +171,7 @@ class ActivityAdmin(Tier1Admin):
 
 
 class EntityAdmin(Tier1Admin):
+	list_filter = ("entity_type",)
 	inlines = (EntityInformationRecordInline,)
 
 

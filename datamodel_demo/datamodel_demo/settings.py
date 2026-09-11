@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
 UNFOLD = {
     "SITE_TITLE": "SGBC Data Model Demo",
     
