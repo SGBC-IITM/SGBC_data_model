@@ -15,12 +15,92 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count
 from django.utils import timezone
+import json
 
 from .models import (
     Activity, ActivityEntity, ActivityInformationRecord, ActivityParameter,
     ActivityType, ActivityTypePort, Entity, EntityInformationRecord,
     EntityType, EntityTypeRecordSlot, InformationRecordType, ParameterDefinition,
+    Protocol, Agent,
 )
+
+
+FIXTURE_MODELS = {
+    "entity_type": EntityType,
+    "activity_type": ActivityType,
+    "information_record_type": InformationRecordType,
+    "parameter_definition": ParameterDefinition,
+    "protocol": Protocol,
+    "agent": Agent,
+    "entity": Entity,
+    "activity": Activity,
+}
+
+
+def _fixture_ref(value, cache):
+    if isinstance(value, str) and value.startswith("$"):
+        key = value[1:]
+        if key not in cache:
+            raise ValidationError(f"Unknown fixture reference: {value}")
+        return cache[key]
+    return value
+
+
+def _resolve_nested(value, cache):
+    if isinstance(value, Mapping):
+        return {key: _resolve_nested(item, cache) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_nested(item, cache) for item in value]
+    return _fixture_ref(value, cache)
+
+
+@transaction.atomic
+def load_json_fixture(source, *, clear=False):
+    """Load a JSON fixture transactionally and return objects keyed by ``key``.
+
+    The document is ``{"objects": [{"model": "entity_type", "key": "brain",
+    "fields": {...}}, ...]}``. Foreign keys use ``"$key"`` references.
+    Activities use ``ports`` and ``information`` fields; entities may use
+    ``information_records``. Existing rows are never overwritten: duplicate
+    identifiers/codes fail and roll back the complete import.
+    """
+    if hasattr(source, "read"):
+        document = json.load(source)
+    elif isinstance(source, (str, bytes, bytearray)):
+        document = json.loads(source)
+    else:
+        document = source
+    if not isinstance(document, Mapping) or not isinstance(document.get("objects"), list):
+        raise ValidationError("Fixture must contain an objects list.")
+    cache = {}
+    created = []
+    for number, item in enumerate(document["objects"], 1):
+        if not isinstance(item, Mapping):
+            raise ValidationError(f"Object {number} must be an object.")
+        model_name, key = item.get("model"), item.get("key")
+        fields = item.get("fields", {})
+        if model_name not in FIXTURE_MODELS or not isinstance(key, str) or not isinstance(fields, Mapping):
+            raise ValidationError(f"Object {number} requires model, string key, and fields.")
+        model = FIXTURE_MODELS[model_name]
+        if key in cache:
+            raise ValidationError(f"Duplicate fixture key: {key}")
+        values = {name: _resolve_nested(value, cache) for name, value in fields.items()}
+        if model is Entity:
+            records = values.pop("information_records", ())
+            obj = create_entity(values.pop("entity_type"), information_records=records, **values)
+        elif model is Activity:
+            ports = values.pop("ports", None)
+            information = values.pop("information", None)
+            parameters = values.pop("parameters", None)
+            obj = create_activity(values.pop("activity_type"), identifier=values.pop("identifier"),
+                                  ports=ports, information=information, parameters=parameters)
+        else:
+            obj = model(**values)
+            validate_entry(obj, complete=False)
+            obj.save()
+        cache[key] = obj
+        created.append(obj)
+    return cache
 
 
 def _resolve(model, value):

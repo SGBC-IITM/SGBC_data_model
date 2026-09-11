@@ -37,6 +37,9 @@ Use `app1.utils` to create validated entities and activities, append information
 records, traverse provenance, query/group by type, and validate existing entries.
 See [the utility API and examples](docs/schema_utilities.md).
 
+JSON fixtures can be loaded with `python manage.py load_json_fixture path.json`
+(use `-` for stdin). The format is documented in [example_fixture.json](docs/example_fixture.json).
+
 Run local tests without a database service:
 
 ```bash
@@ -322,5 +325,4 @@ keeps the database between restarts; use `docker compose down -v` to remove it.
 The script reads the table names from `SGBC_data_model.sql`, runs `inspectdb`
 inside the web container, writes `datamodel_demo/app1/models.py`, and runs
 `manage.py check`. The models are automatically registered in Django admin.
-
 

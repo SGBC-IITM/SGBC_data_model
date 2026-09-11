@@ -7,6 +7,23 @@ they do not upsert existing provenance nodes.
 
 ## Create entities and activities
 
+### JSON fixtures
+
+For repeatable imports, use `load_json_fixture` or the management command:
+
+```bash
+python manage.py load_json_fixture docs/example_fixture.json
+cat docs/example_fixture.json | python manage.py load_json_fixture -
+```
+
+The top-level value must contain an `objects` array. Each entry has a unique
+local `key`, a supported `model`, and a `fields` object. Objects are created in
+array order, so references can point only to earlier entries. Foreign keys use
+`"$key"`; references also work inside nested activity fields. Imports are
+atomic: malformed references, duplicate identifiers, invalid ports, abstract
+types, or protocol violations roll back the complete document. Existing rows
+are never updated.
+
 The vocabulary and ports must already exist. Entity and activity types must have
 `is_instantiable=True`. Types can be passed as saved model instances or codes.
 
