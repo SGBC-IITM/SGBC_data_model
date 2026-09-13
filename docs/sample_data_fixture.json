@@ -1,0 +1,48 @@
+{
+  "objects": [
+    {"model": "entity_type", "key": "material", "fields": {"code": "material_entity", "name": "Material entity", "is_instantiable": true}},
+    {"model": "activity_type", "key": "extraction", "fields": {"code": "extraction", "name": "Extraction", "is_instantiable": true}},
+    {"model": "activity_type", "key": "transport", "fields": {"code": "transport", "name": "Transport", "is_instantiable": true}},
+    {"model": "activity_type", "key": "preservation", "fields": {"code": "preservation", "name": "Preservation", "is_instantiable": true}},
+    {"model": "activity_type", "key": "measurement", "fields": {"code": "measurement", "name": "Measurement", "is_instantiable": true}},
+    {"model": "activity_type", "key": "rna_isolation", "fields": {"code": "rna_isolation", "name": "RNA isolation", "is_instantiable": true}},
+    {"model": "activity_type", "key": "processing", "fields": {"code": "processing", "name": "Processing", "is_instantiable": true}},
+    {"model": "activity_type", "key": "storage", "fields": {"code": "storage", "name": "Storage", "is_instantiable": true}},
+
+    {"model": "activity_type_port", "key": "extraction_in", "fields": {"activity_type": "$extraction", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "extraction_out", "fields": {"activity_type": "$extraction", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "transport_in", "fields": {"activity_type": "$transport", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "transport_out", "fields": {"activity_type": "$transport", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "preservation_in", "fields": {"activity_type": "$preservation", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "preservation_out", "fields": {"activity_type": "$preservation", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "measurement_in", "fields": {"activity_type": "$measurement", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "measurement_out", "fields": {"activity_type": "$measurement", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "rna_in", "fields": {"activity_type": "$rna_isolation", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "rna_out", "fields": {"activity_type": "$rna_isolation", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "processing_in", "fields": {"activity_type": "$processing", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "processing_out", "fields": {"activity_type": "$processing", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "storage_in", "fields": {"activity_type": "$storage", "name": "input", "direction": "input", "entity_type": "$material", "min_count": 0}},
+    {"model": "activity_type_port", "key": "storage_out", "fields": {"activity_type": "$storage", "name": "output", "direction": "output", "entity_type": "$material", "min_count": 0}},
+
+    {"model": "entity", "key": "donor_1949_26", "fields": {"entity_type": "$material", "identifier": "donor:1949/26", "metadata": {"age": 39, "sex": "M", "cause_of_death": "suicide (hanging)", "date_time_of_death": "11-08-2026, 3.30pm", "body_preservation": "4degC"}}},
+    {"model": "entity", "key": "brain_hb04", "fields": {"entity_type": "$material", "identifier": "sample:HB04", "physical_identity": "1949/26", "metadata": {"sample_name": "HB04", "type": "adult human brain"}}},
+    {"model": "entity", "key": "block_rh", "fields": {"entity_type": "$material", "identifier": "HB04:block:RH", "physical_identity": "1949/26", "metadata": {"label": "RH"}}},
+    {"model": "entity", "key": "block_hindbrain", "fields": {"entity_type": "$material", "identifier": "HB04:block:hindbrain-cerebellum-left", "physical_identity": "1949/26", "metadata": {"label": "hindbrain/cerebellum/left chunk for RNA isolation"}}},
+    {"model": "entity", "key": "block_frontal", "fields": {"entity_type": "$material", "identifier": "HB04:block:frontal-cortex", "physical_identity": "1949/26", "metadata": {"label": "frontal lobe/frontal cortex"}}},
+    {"model": "entity", "key": "block_pfc", "fields": {"entity_type": "$material", "identifier": "HB04:block:pfc-punch", "physical_identity": "1949/26", "metadata": {"label": "frontal lobe/frontal cortex/PFC punch biopsy for RNA isolation"}}},
+    {"model": "entity", "key": "blood_hb104", "fields": {"entity_type": "$material", "identifier": "sample:HB104-blood", "physical_identity": "1949/26", "metadata": {"sample_name": "HB104 blood", "type": "blood sample", "quantity": "5ml"}}},
+
+    {"model": "activity", "key": "act_extraction", "fields": {"activity_type": "$extraction", "identifier": "1949/26:extraction", "ports": {"input": "$donor_1949_26", "output": "$brain_hb04"}, "information": {"metadata": {"site": "KMC", "date_time": "12-08-2026, 2.00pm", "post_mortem_interval": "22.5 hrs"}}}},
+    {"model": "activity", "key": "act_transport", "fields": {"activity_type": "$transport", "identifier": "1949/26:transport", "ports": {"input": "$brain_hb04", "output": "$brain_hb04"}, "information": {"metadata": {"date_arrived": "12-08-2026, 4.40pm"}}}},
+    {"model": "activity", "key": "act_rh_preservation", "fields": {"activity_type": "$preservation", "identifier": "HB04:RH:preservation", "ports": {"input": "$block_rh", "output": "$block_rh"}, "information": {"metadata": {"medium": "4% PFA", "temperature": "4degC", "time": "5.16pm"}}}},
+    {"model": "activity", "key": "act_rh_measurement", "fields": {"activity_type": "$measurement", "identifier": "HB04:RH:measurement", "ports": {"input": "$block_rh", "output": "$block_rh"}, "parameters": {"length": "21 cm", "width": "9 cm"}}},
+    {"model": "activity", "key": "act_hindbrain_preservation", "fields": {"activity_type": "$preservation", "identifier": "HB04:hindbrain:preservation", "ports": {"input": "$block_hindbrain", "output": "$block_hindbrain"}, "information": {"metadata": {"medium": "liquid nitrogen", "temperature": "-80degC, MCT", "time": "5.16pm"}}}},
+    {"model": "activity", "key": "act_hindbrain_rna", "fields": {"activity_type": "$rna_isolation", "identifier": "HB04:hindbrain:rna-isolation", "ports": {"input": "$block_hindbrain", "output": "$block_hindbrain"}, "information": {"metadata": {"collection_date": "12-08-2026", "extraction_method": "tissue in trizol; kit method", "qubit_concentration": "61.4 ng/ul", "RIN": null, "DV200": null, "purity_scores": {"260/280": null, "260/360": null}, "storage_box_id": "rack1_minus80"}}}},
+    {"model": "activity", "key": "act_frontal_preservation", "fields": {"activity_type": "$preservation", "identifier": "HB04:frontal:preservation", "ports": {"input": "$block_frontal", "output": "$block_frontal"}, "information": {"metadata": {"medium": "30% sucrose + OCT (20 min), LN2", "temperature": "-80degC, foil + ziplock", "time": "5.16pm"}}}},
+    {"model": "activity", "key": "act_frontal_measurement", "fields": {"activity_type": "$measurement", "identifier": "HB04:frontal:measurement", "ports": {"input": "$block_frontal", "output": "$block_frontal"}, "parameters": {"length": "8 cm", "width": "10.5 cm"}}},
+    {"model": "activity", "key": "act_pfc_preservation", "fields": {"activity_type": "$preservation", "identifier": "HB04:pfc:preservation", "ports": {"input": "$block_pfc", "output": "$block_pfc"}, "information": {"metadata": {"medium": "liquid nitrogen", "temperature": "-80degC, MCT", "time": "5.16pm"}}}},
+    {"model": "activity", "key": "act_pfc_rna", "fields": {"activity_type": "$rna_isolation", "identifier": "HB04:pfc:rna-isolation", "ports": {"input": "$block_pfc", "output": "$block_pfc"}, "information": {"metadata": {"collection_date": "12-08-2026", "extraction_method": "tissue in trizol; kit method", "qubit_concentration": "236 ng/ul", "RIN": 3.4, "DV200": null, "purity_scores": {"260/280": null, "260/360": null}, "storage_box_id": "rack1_minus80"}}}},
+    {"model": "activity", "key": "act_blood_processing", "fields": {"activity_type": "$processing", "identifier": "HB104:processing", "ports": {"input": "$blood_hb104", "output": "$blood_hb104"}, "information": {"metadata": {"method": "centrifugation at 2000 g for 10 minutes, followed by separating plasma and blood, resuspending debris in PB"}}}},
+    {"model": "activity", "key": "act_blood_storage", "fields": {"activity_type": "$storage", "identifier": "HB104:storage", "ports": {"input": "$blood_hb104", "output": "$blood_hb104"}, "information": {"metadata": {"number_of_tubes": 10, "quantity": "500 ul", "storage_temperature": "-80 degC", "storage_location": null}}}}
+  ]
+}

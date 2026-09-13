@@ -28,6 +28,7 @@ from .models import (
 FIXTURE_MODELS = {
     "entity_type": EntityType,
     "activity_type": ActivityType,
+    "activity_type_port": ActivityTypePort,
     "information_record_type": InformationRecordType,
     "parameter_definition": ParameterDefinition,
     "protocol": Protocol,
@@ -87,6 +88,11 @@ def load_json_fixture(source, *, clear=False):
         values = {name: _resolve_nested(value, cache) for name, value in fields.items()}
         if model is Entity:
             records = values.pop("information_records", ())
+            # Entity has no mutable metadata column; accept fixture metadata as
+            # a general sidecar for ergonomic imports.
+            if "metadata" in values:
+                metadata = values.pop("metadata")
+                records = list(records) + [{"metadata": metadata}]
             obj = create_entity(values.pop("entity_type"), information_records=records, **values)
         elif model is Activity:
             ports = values.pop("ports", None)

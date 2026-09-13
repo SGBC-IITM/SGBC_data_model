@@ -1,0 +1,195 @@
+
+donor:
+{
+    id: 1949/26
+    info:
+    {
+        age: 39
+        sex: M
+        cause of death: suicide (hanging)
+        date and time of death: 11-08-2026, 3.30pm
+        body preservation: 4degC        
+    }
+    activities:
+    [
+        {
+            activity: extraction
+            info:
+            {
+                site: KMC
+                date time of brain extraction: 12-08-2026, 2.00pm
+                post-mortem interval: 22.5 hrs        
+            }
+        },
+        {
+            activity: transport
+            info: 
+            {
+                date arrived: 12-08-2026, 4.40pm
+            }
+        }
+    ]
+    biosamples:
+    [
+        {
+            sample name: HB04
+            type: adult human brain
+
+            blocks: 
+            [
+                {
+                    label: RH,    
+                    activities: [
+                        {
+                            activity: preservation
+                            info:
+                            {
+                                medium: 4% PFA
+                                temperature: 4degC
+                                time: 5.16pm
+                            }                        
+                        },
+                        {
+                            activity: measurement
+                            info:
+                            {
+                                length: 21 cm,
+                                width: 9 cm, 
+                            }
+                        }
+                    ]                
+                },
+                {
+                    label: hindbrain/cerebellum/left chunk for RNA isolation,    
+                    activities: [
+                        {
+                            activity: preservation
+                            info:
+                            {
+                                medium: liquid nitrogen
+                                temperature: -80degC, MCT
+                                time: 5.16pm
+                            }                        
+                        },
+                        {
+                            activity: measurement
+                            info:
+                            {
+                                length: 21 cm,
+                                width: 9 cm, 
+                            }
+                        },
+                        {
+                            activity: RNA isolation,
+                            info:
+                            {
+                                collection date: 12-08-2026,
+                                extraction method: tissue in trizol; kit method,
+                                qubit concentration: 61.4 ng/ul,
+                                RIN: -,
+                                DV200: null,
+                                purity scores: {
+                                    260/280: null,
+                                    260/360: null,
+                                },
+                                storage box id: rack1_minus80
+                            }
+                        }
+                    ]                
+                },
+                {
+                    label: frontal lobe/frontal cortex,    
+                    activities: [
+                        {
+                            activity: preservation
+                            info:
+                            {
+                                medium: 30% sucrose + OCT (20 min), LN2
+                                temperature: -80degC, foil + ziplock
+                                time: 5.16pm
+                            }                        
+                        },
+                        {
+                            activity: measurement
+                            info:
+                            {
+                                length: 8 cm,
+                                width: 10.5 cm, 
+                            }
+                        },
+                    ]
+                },
+                {
+                    label: frontal lobe/frontal cortex/PFC punch biopsy for RNA isolation,    
+                    activities: [
+                        {
+                            activity: preservation
+                            info:
+                            {
+                                medium: liquid nitrogen
+                                temperature: -80degC, MCT
+                                time: 5.16pm
+                            }                        
+                        },
+                        {
+                            activity: measurement
+                            info:
+                            {
+                                length: 8 cm,
+                                width: 10.5 cm, 
+                            }
+                        },
+                        {
+                            activity: RNA isolation,
+                            info:
+                            {
+                                collection date: 12-08-2026,
+                                extraction method: tissue in trizol; kit method,
+                                qubit concentration: 236 ng/ul,
+                                RIN: 3.4,
+                                DV200: null,
+                                purity scores: {
+                                    260/280: null,
+                                    260/360: null,
+                                },
+                                storage box id: rack1_minus80
+                            }
+                        }
+                    ]                
+                },          
+            ]
+            
+        },
+
+        {
+            sample name: HB104 blood
+            type: blood sample
+            quantity: 5ml
+
+            activities:
+            [
+                {
+                    activity: processing
+                    info:
+                    {
+                        method: centrifugation at 2000 g for 10 minutes, followed by separating plasma and blood, resuspending debris in PB
+
+                    }
+                },
+                {
+                    activity: storage
+                    info:
+                    {
+                        number of tubes: 10
+                        quantity: 500 ul
+                        storage temperature: -80 degC
+                        storage location: null
+
+                    }
+                }
+            ]
+
+
+        }
+    ]
+}

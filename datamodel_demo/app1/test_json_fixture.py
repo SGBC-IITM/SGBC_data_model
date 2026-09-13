@@ -5,9 +5,16 @@ from django.test import TestCase
 
 from .models import Entity
 from .utils import load_json_fixture
+from pathlib import Path
 
 
 class JsonFixtureTests(TestCase):
+    def test_supplied_sample_fixture_is_valid(self):
+        path = Path(__file__).parents[1].parent / "docs" / "sample_data_fixture.json"
+        result = load_json_fixture(path.read_text(encoding="utf-8"))
+        self.assertEqual(result["act_extraction"].identifier, "1949/26:extraction")
+        self.assertEqual(Entity.objects.count(), 7)
+
     def test_references_and_atomic_rollback(self):
         fixture = {"objects": [
             {"model": "entity_type", "key": "brain", "fields": {
