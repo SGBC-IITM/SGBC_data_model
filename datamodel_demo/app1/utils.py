@@ -109,6 +109,77 @@ def load_json_fixture(source, *, clear=False):
     return cache
 
 
+def compile_json_draft(source):
+    """Compile a readable draft document into the canonical fixture format.
+
+    Draft shape: ``{entity_types: [], activity_types: [], entities: [],
+    activities: []}``. Every activity declares explicit ``inputs`` and
+    ``outputs`` as entity IDs. The result can be passed to
+    :func:`load_json_fixture` or serialized with ``json.dump``.
+    """
+    if hasattr(source, "read"):
+        draft = json.load(source)
+    elif isinstance(source, (str, bytes, bytearray)):
+        draft = json.loads(source)
+    else:
+        draft = source
+    if not isinstance(draft, Mapping):
+        raise ValidationError("Draft must be a JSON object.")
+    result = {"objects": []}
+    keys = set()
+
+    def add(model, key, fields):
+        if key in keys:
+            raise ValidationError(f"Duplicate draft key: {key}")
+        keys.add(key)
+        result["objects"].append({"model": model, "key": key, "fields": fields})
+
+    def rows(name):
+        value = draft.get(name, [])
+        if not isinstance(value, list):
+            raise ValidationError(f"Draft field {name} must be an array.")
+        return value
+
+    for row in rows("entity_types"):
+        add("entity_type", row["id"], {"code": row.get("code", row["id"]),
+            "name": row.get("name", row["id"]), "description": row.get("description"),
+            "is_instantiable": row.get("is_instantiable", True),
+            **({"parent": "$" + row["parent"]} if row.get("parent") else {})})
+    for row in rows("activity_types"):
+        add("activity_type", row["id"], {"code": row.get("code", row["id"]),
+            "name": row.get("name", row["id"]), "description": row.get("description"),
+            "is_instantiable": row.get("is_instantiable", True)})
+        for direction in ("input", "output"):
+            add("activity_type_port", f"{row['id']}_{direction}", {
+                "activity_type": "$" + row["id"], "name": direction,
+                "direction": direction, "entity_type": "$" + row.get("entity_type", "material_entity"),
+                "min_count": 0})
+    known_entity_types = {r["id"] for r in rows("entity_types")}
+    for row in rows("entities"):
+        entity_type = row.get("type", "material_entity")
+        if entity_type not in known_entity_types:
+            raise ValidationError(f"Unknown entity type in draft: {entity_type}")
+        fields = {"entity_type": "$" + entity_type, "identifier": row.get("identifier", row["id"])}
+        for name in ("physical_identity", "created_at"):
+            if name in row: fields[name] = row[name]
+        if "metadata" in row: fields["metadata"] = row["metadata"]
+        add("entity", row["id"], fields)
+    entity_ids = {r["id"] for r in rows("entities")}
+    for row in rows("activities"):
+        activity_type = row["type"]
+        inputs, outputs = row.get("inputs", []), row.get("outputs", [])
+        if not isinstance(inputs, list) or not isinstance(outputs, list):
+            raise ValidationError(f"Activity {row['id']} inputs and outputs must be arrays.")
+        missing = (set(inputs) | set(outputs)) - entity_ids
+        if missing: raise ValidationError(f"Activity {row['id']} references unknown entities: {sorted(missing)}")
+        fields = {"activity_type": "$" + activity_type, "identifier": row.get("identifier", row["id"]),
+                  "ports": {"input": ["$" + x for x in inputs], "output": ["$" + x for x in outputs]}}
+        if "information" in row: fields["information"] = row["information"]
+        if "parameters" in row: fields["parameters"] = row["parameters"]
+        add("activity", row["id"], fields)
+    return result
+
+
 def _resolve(model, value):
     if isinstance(value, str):
         return model.objects.get(code=value)

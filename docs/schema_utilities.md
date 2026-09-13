@@ -9,6 +9,19 @@ they do not upsert existing provenance nodes.
 
 ### JSON fixtures
 
+For hand drafting, use the simpler JSON draft format in
+`docs/draft_example.json`, then compile it:
+
+```bash
+python manage.py compile_json_draft docs/draft_example.json -o normalized.json
+python manage.py load_json_fixture normalized.json
+```
+
+Draft activities always declare explicit `inputs` and `outputs` using entity
+IDs. The compiler generates the canonical `$key` references and input/output
+ports. This keeps authoring readable while preserving the complete provenance
+graph.
+
 For repeatable imports, use `load_json_fixture` or the management command:
 
 ```bash
