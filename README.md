@@ -40,6 +40,18 @@ See [the utility API and examples](docs/schema_utilities.md).
 JSON fixtures can be loaded with `python manage.py load_json_fixture path.json`
 (use `-` for stdin). The format is documented in [example_fixture.json](docs/example_fixture.json).
 
+To export a populated, complete provenance record as JSON, select any entity in
+the connected graph:
+
+```bash
+python manage.py export_provenance B001-fixed -o provenance.json
+```
+
+The export preserves the graph rather than flattening it into a tree: it includes
+all linked entities and activities, every sidecar revision and parameter, port
+edges, provenance boundaries, external references, relations, agents, and
+protocols. Its format is documented in [schema_utilities.md](docs/schema_utilities.md).
+
 Run local tests without a database service:
 
 ```bash
@@ -325,4 +337,3 @@ keeps the database between restarts; use `docker compose down -v` to remove it.
 The script reads the table names from `SGBC_data_model.sql`, runs `inspectdb`
 inside the web container, writes `datamodel_demo/app1/models.py`, and runs
 `manage.py check`. The models are automatically registered in Django admin.
-

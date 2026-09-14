@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from .models import Entity
-from .utils import load_json_fixture
+from .utils import export_provenance, load_json_fixture
 from pathlib import Path
 
 
@@ -32,3 +32,21 @@ class JsonFixtureTests(TestCase):
         with self.assertRaises(ValidationError):
             load_json_fixture(bad)
         self.assertEqual(Entity.objects.count(), 1)
+
+    def test_export_provenance_preserves_connected_graph_and_record_history(self):
+        path = Path(__file__).parents[1].parent / "docs" / "sample_data_fixture.json"
+        loaded = load_json_fixture(path.read_text(encoding="utf-8"))
+
+        document = export_provenance(loaded["brain_hb04"])
+
+        self.assertEqual(document["format"], "sgbc-provenance-export/v1")
+        self.assertEqual(document["root_entity_id"], str(loaded["brain_hb04"].pk))
+        self.assertEqual({row["identifier"] for row in document["entities"]}, {
+            "donor:1949/26", "sample:HB04",
+        })
+        extraction = next(row for row in document["activities"]
+                          if row["identifier"] == "1949/26:extraction")
+        links = [row for row in document["activity_entity_links"]
+                 if row["activity_id"] == extraction["id"]]
+        self.assertEqual({row["direction"] for row in links}, {"input", "output"})
+        self.assertTrue(json.dumps(document, default=str))

@@ -13,15 +13,16 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 import json
 
 from .models import (
-    Activity, ActivityEntity, ActivityInformationRecord, ActivityParameter,
-    ActivityType, ActivityTypePort, Entity, EntityInformationRecord,
-    EntityType, EntityTypeRecordSlot, InformationRecordType, ParameterDefinition,
-    Protocol, Agent,
+    AccessionInformation, Activity, ActivityEntity, ActivityInformationRecord,
+    ActivityParameter, ActivityType, ActivityTypePort, Agent, Entity,
+    EntityInformationRecord, EntityProvenance, EntityRelation,
+    EntityType, EntityTypeRecordSlot, ExternalReference, InformationRecordType,
+    ParameterDefinition, Protocol,
 )
 
 
@@ -762,6 +763,162 @@ def log_activity(
         )
 
     return activity
+
+
+def export_provenance(entity):
+    """Return the complete connected provenance graph for an entity as JSON data.
+
+    The export is intentionally graph-shaped rather than a nested tree: entities
+    and activities can have many inputs/outputs and may participate in cycles.
+    It contains every information-record revision, parameter, graph edge, and
+    associated provenance sidecar needed to retain the record without dropping
+    historical assertions.  The returned dictionary only uses JSON-compatible
+    values when encoded with :class:`django.core.serializers.json.DjangoJSONEncoder`.
+    """
+    if not isinstance(entity, Entity):
+        entity = Entity.objects.get(pk=entity)
+
+    entity_ids = {entity.pk}
+    activity_ids = set()
+    # An entity/activity bipartite connected-component traversal preserves both
+    # ancestors and descendants of the requested entity.
+    while True:
+        linked_activity_ids = set(ActivityEntity.objects.filter(
+            entity_id__in=entity_ids
+        ).values_list("activity_id", flat=True))
+        linked_entity_ids = set(ActivityEntity.objects.filter(
+            activity_id__in=activity_ids | linked_activity_ids
+        ).values_list("entity_id", flat=True))
+        if linked_activity_ids <= activity_ids and linked_entity_ids <= entity_ids:
+            break
+        activity_ids |= linked_activity_ids
+        entity_ids |= linked_entity_ids
+
+    entities = list(Entity.objects.filter(pk__in=entity_ids).select_related("entity_type").order_by("pk"))
+    activities = list(Activity.objects.filter(pk__in=activity_ids).select_related("activity_type").order_by("pk"))
+    entity_records = list(EntityInformationRecord.objects.filter(entity_id__in=entity_ids)
+                          .select_related("information_record_type", "recorded_by_agent", "supersedes_record")
+                          .order_by("entity_id", "version"))
+    activity_records = list(ActivityInformationRecord.objects.filter(activity_id__in=activity_ids)
+                            .select_related("protocol", "operator_agent", "recorded_by_agent", "supersedes_record")
+                            .order_by("activity_id", "version"))
+    record_ids = [record.pk for record in activity_records]
+    parameters = list(ActivityParameter.objects.filter(activity_information_record_id__in=record_ids)
+                      .select_related("parameter_definition").order_by("activity_information_record_id", "sequence_no", "pk"))
+    links = list(ActivityEntity.objects.filter(activity_id__in=activity_ids)
+                 .select_related("port").order_by("activity_id", "port__name", "sequence_no", "pk"))
+    references = list(ExternalReference.objects.filter(
+        Q(entity_id__in=entity_ids) | Q(activity_id__in=activity_ids)
+    ).order_by("pk"))
+    relations = list(EntityRelation.objects.filter(
+        source_entity_id__in=entity_ids, target_entity_id__in=entity_ids
+    ).select_related("entity_relation_type").order_by("pk"))
+    provenances = {
+        row.entity_id: row for row in EntityProvenance.objects.filter(entity_id__in=entity_ids)
+    }
+    accessions = {
+        row.activity_information_record_id: row
+        for row in AccessionInformation.objects.filter(activity_information_record_id__in=record_ids)
+    }
+
+    agent_ids = {record.recorded_by_agent_id for record in entity_records + activity_records if record.recorded_by_agent_id}
+    agent_ids |= {record.operator_agent_id for record in activity_records if record.operator_agent_id}
+    agent_ids |= {accession.source_organization_agent_id for accession in accessions.values() if accession.source_organization_agent_id}
+    agent_ids |= {accession.received_by_agent_id for accession in accessions.values() if accession.received_by_agent_id}
+    agents = Agent.objects.filter(pk__in=agent_ids).order_by("pk")
+    protocol_ids = {record.protocol_id for record in activity_records if record.protocol_id}
+    protocols = Protocol.objects.filter(pk__in=protocol_ids).order_by("pk")
+
+    def stamp(value):
+        return value.isoformat() if value else None
+
+    def record_fields(record):
+        return {
+            "id": str(record.pk), "version": record.version,
+            "valid_from": stamp(record.valid_from), "valid_until": stamp(record.valid_until),
+            "recorded_at": stamp(record.recorded_at),
+            "recorded_by_agent_id": str(record.recorded_by_agent_id) if record.recorded_by_agent_id else None,
+            "supersedes_record_id": str(record.supersedes_record_id) if record.supersedes_record_id else None,
+            "description": record.description, "metadata": record.metadata,
+        }
+
+    def parameter_value(parameter):
+        for field in ("value_text", "value_integer", "value_decimal", "value_boolean", "value_datetime", "value_json"):
+            value = getattr(parameter, field)
+            if value is not None:
+                return field.removeprefix("value_"), value
+        return None, None
+
+    return {
+        "format": "sgbc-provenance-export/v1",
+        "root_entity_id": str(entity.pk),
+        "entities": [{
+            "id": str(item.pk), "identifier": item.identifier,
+            "entity_type": item.entity_type.code, "physical_identity": item.physical_identity,
+            "created_at": stamp(item.created_at),
+            "provenance": ({"status": provenances[item.pk].provenance_status,
+                            "boundary_activity_id": str(provenances[item.pk].provenance_boundary_activity_id) if provenances[item.pk].provenance_boundary_activity_id else None,
+                            "source_description": provenances[item.pk].source_description,
+                            "notes": provenances[item.pk].notes} if item.pk in provenances else None),
+        } for item in entities],
+        "activities": [{
+            "id": str(item.pk), "identifier": item.identifier,
+            "activity_type": item.activity_type.code, "created_at": stamp(item.created_at),
+        } for item in activities],
+        "activity_entity_links": [{
+            "activity_id": str(link.activity_id), "entity_id": str(link.entity_id),
+            "port": link.port.name, "direction": link.port.direction,
+            "sequence_no": link.sequence_no,
+        } for link in links],
+        "entity_information_records": [{
+            **record_fields(record), "entity_id": str(record.entity_id),
+            "information_record_type": record.information_record_type.code if record.information_record_type_id else None,
+            "name": record.name, "status": record.status,
+        } for record in entity_records],
+        "activity_information_records": [{
+            **record_fields(record), "activity_id": str(record.activity_id),
+            "status": record.status, "started_at": stamp(record.started_at), "ended_at": stamp(record.ended_at),
+            "protocol_id": str(record.protocol_id) if record.protocol_id else None,
+            "operator_agent_id": str(record.operator_agent_id) if record.operator_agent_id else None,
+            "notes": record.notes,
+        } for record in activity_records],
+        "activity_parameters": [{
+            "id": str(parameter.pk), "activity_information_record_id": str(parameter.activity_information_record_id),
+            "parameter_definition": parameter.parameter_definition.code if parameter.parameter_definition_id else None,
+            "parameter_name": parameter.parameter_name, "value_type": parameter_value(parameter)[0],
+            "value": parameter_value(parameter)[1], "unit": parameter.unit,
+            "sequence_no": parameter.sequence_no, "metadata": parameter.metadata,
+        } for parameter in parameters],
+        "accession_information": [{
+            "activity_information_record_id": str(row.activity_information_record_id),
+            "accession_number": row.accession_number, "accessioned_at": stamp(row.accessioned_at),
+            "source_organization_agent_id": str(row.source_organization_agent_id) if row.source_organization_agent_id else None,
+            "received_by_agent_id": str(row.received_by_agent_id) if row.received_by_agent_id else None,
+            "external_specimen_identifier": row.external_specimen_identifier,
+            "shipment_reference": row.shipment_reference, "transfer_reference": row.transfer_reference,
+            "provenance_status": row.provenance_status, "source_description": row.source_description,
+            "metadata": row.metadata,
+        } for row in accessions.values()],
+        "external_references": [{
+            "id": str(row.pk), "subject_type": row.subject_type,
+            "entity_id": str(row.entity_id) if row.entity_id else None,
+            "activity_id": str(row.activity_id) if row.activity_id else None,
+            "namespace": row.namespace, "external_id": row.external_id,
+            "source_system": row.source_system, "source_organization": row.source_organization,
+            "uri": row.uri, "description": row.description, "created_at": stamp(row.created_at),
+            "metadata": row.metadata,
+        } for row in references],
+        "entity_relations": [{
+            "id": str(row.pk), "source_entity_id": str(row.source_entity_id),
+            "target_entity_id": str(row.target_entity_id), "relation_type": row.entity_relation_type.code,
+            "activity_id": str(row.activity_id) if row.activity_id else None,
+            "created_at": stamp(row.created_at), "metadata": row.metadata,
+        } for row in relations],
+        "agents": [{"id": str(row.pk), "identifier": row.identifier, "agent_type": row.agent_type,
+                    "name": row.name, "affiliation": row.affiliation, "metadata": row.metadata} for row in agents],
+        "protocols": [{"id": str(row.pk), "identifier": row.identifier, "name": row.name,
+                       "version": row.version, "description": row.description, "uri": row.uri} for row in protocols],
+    }
 
 
 def make_token(length=10):

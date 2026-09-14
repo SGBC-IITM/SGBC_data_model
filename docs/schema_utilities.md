@@ -136,6 +136,35 @@ to select an entire type subtree. Group entities and activities separately.
 `group_by_type` materializes objects; `count_by_type` takes a queryset.
 The latest record is selected by version, not by validity dates.
 
+## Export a provenance record
+
+`export_provenance` serializes the complete connected component containing an
+entity. It follows graph links in both directions, so exporting a final artifact
+includes its upstream history and its sibling outputs. Unlike a nested document,
+the export represents multi-input/multi-output activities without duplicating
+nodes or losing cycles.
+
+```bash
+python manage.py export_provenance B001-fixed -o provenance.json
+```
+
+The resulting JSON has `format: "sgbc-provenance-export/v1"` and a
+`root_entity_id`. It contains separate arrays for `entities`, `activities`,
+`activity_entity_links`, entity/activity information-record revisions,
+parameters, accession information, external references, entity relations,
+agents, and protocols. IDs cross-reference these arrays. This is a lossless
+provenance interchange/export document, rather than the import-only fixture
+format. To use it in application code:
+
+```python
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from app1.utils import export_provenance
+
+document = export_provenance(entity)
+payload = json.dumps(document, cls=DjangoJSONEncoder, indent=2)
+```
+
 ## Validate existing entries
 
 ```python
