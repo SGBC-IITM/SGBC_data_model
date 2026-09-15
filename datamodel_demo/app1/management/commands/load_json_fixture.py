@@ -1,4 +1,5 @@
 import json
+import sys
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             if options["path"] == "-":
-                result = load_json_fixture(self.stdin)
+                result = load_json_fixture(sys.stdin)
             else:
                 with open(options["path"], encoding="utf-8") as fixture:
                     result = load_json_fixture(fixture)
