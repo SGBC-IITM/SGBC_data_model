@@ -150,11 +150,19 @@ def compile_json_draft(source):
         add("activity_type", row["id"], {"code": row.get("code", row["id"]),
             "name": row.get("name", row["id"]), "description": row.get("description"),
             "is_instantiable": row.get("is_instantiable", True)})
-        for direction in ("input", "output"):
-            add("activity_type_port", f"{row['id']}_{direction}", {
-                "activity_type": "$" + row["id"], "name": direction,
-                "direction": direction, "entity_type": "$" + row.get("entity_type", "material_entity"),
-                "min_count": 0})
+        ports = row.get("ports")
+        if ports is None:
+            ports = [
+                {"name": "input", "direction": "input",
+                 "entity_type": row.get("input_entity_type", row.get("entity_type", "material_entity"))},
+                {"name": "output", "direction": "output",
+                 "entity_type": row.get("output_entity_type", row.get("entity_type", "material_entity"))},
+            ]
+        for port in ports:
+            add("activity_type_port", f"{row['id']}_{port['name']}", {
+                "activity_type": "$" + row["id"], "name": port["name"],
+                "direction": port["direction"], "entity_type": "$" + port["entity_type"],
+                "min_count": port.get("min_count", 0), "max_count": port.get("max_count")})
     known_entity_types = {r["id"] for r in rows("entity_types")}
     for row in rows("entities"):
         entity_type = row.get("type", "material_entity")
@@ -170,11 +178,27 @@ def compile_json_draft(source):
         activity_type = row["type"]
         inputs, outputs = row.get("inputs", []), row.get("outputs", [])
         if not isinstance(inputs, list) or not isinstance(outputs, list):
-            raise ValidationError(f"Activity {row['id']} inputs and outputs must be arrays.")
-        missing = (set(inputs) | set(outputs)) - entity_ids
+            if not isinstance(inputs, Mapping) or not isinstance(outputs, Mapping):
+                raise ValidationError(f"Activity {row['id']} inputs and outputs must be arrays or objects.")
+
+        def referenced_entities(value):
+            if isinstance(value, list):
+                return value
+            return [entity for values in value.values() for entity in values]
+
+        input_entities = referenced_entities(inputs)
+        output_entities = referenced_entities(outputs)
+        missing = (set(input_entities) | set(output_entities)) - entity_ids
         if missing: raise ValidationError(f"Activity {row['id']} references unknown entities: {sorted(missing)}")
+        def resolve_ports(value, default_name):
+            if isinstance(value, list):
+                return {default_name: ["$" + x for x in value]}
+            if isinstance(value, Mapping):
+                return {name: ["$" + x for x in entities] for name, entities in value.items()}
+            raise ValidationError(f"Activity {row['id']} {default_name}s must be an array or object.")
+
         fields = {"activity_type": "$" + activity_type, "identifier": row.get("identifier", row["id"]),
-                  "ports": {"input": ["$" + x for x in inputs], "output": ["$" + x for x in outputs]}}
+                  "ports": {**resolve_ports(inputs, "input"), **resolve_ports(outputs, "output")}}
         if "information" in row: fields["information"] = row["information"]
         if "parameters" in row: fields["parameters"] = row["parameters"]
         add("activity", row["id"], fields)

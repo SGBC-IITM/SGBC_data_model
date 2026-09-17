@@ -1,0 +1,83 @@
+rat_brain_stereoseq:
+{
+    id: D04499F5G6
+    info:
+    {
+        source: STOmics public demo dataset
+        source url: https://en.stomics.tech/col1940
+        title: Spatial Gene Expression of Rat Brain Fresh Frozen Tissue
+        species: Rat
+        strain: SD
+        sex: male
+        age: 6-8 week
+        tissue: Brain
+        embedding method: Fresh frozen
+        RIN value: 8.2
+        chip serial number: D04499F5G6
+    }
+    samples:
+    [
+        {
+            sample name: rat brain fresh frozen section
+            type: brain tissue section
+            info:
+            {
+                section thickness: 10 um
+                staining type: ssDNA staining
+                permeabilization time: 14 min
+            }
+            activities:
+            [
+                {
+                    activity: spatial transcriptomics library preparation
+                    info:
+                    {
+                        product: Stereo-seq FF
+                        kit version: Stereo-seq T FF V1.3
+                        chip size: 2 cm x 2 cm
+                    }
+                },
+                {
+                    activity: sequencing
+                    info:
+                    {
+                        sequencing platform: Stereo-seq
+                        chip serial number: D04499F5G6
+                    }
+                },
+                {
+                    activity: spatial transcriptomics analysis
+                    info:
+                    {
+                        software: SAW 8.1 and StereoMap 4.1
+                        bin200 median MID: 50043
+                        bin200 median gene type: 10099
+                        bin20 median MID: 439
+                        bin20 median gene type: 368
+                        cell bin gene type: 601
+                        cell bin MID: 751
+                        sequencing saturation: 47.7%
+                        fraction MID in spots under tissue: 83.57%
+                    }
+                }
+            ]
+        }
+    ]
+    files:
+    [
+        {
+            file: D04499F5G6_SC_20250605_182007_4.1.2.tar.gz
+            type: analysis output archive
+            size: 541.04MB
+            md5: 83b7d9464f5faa56b0c43887786367cc
+        },
+        {
+            file: D04499F5G6.barcodeToPos.h5
+            type: barcode-to-position file
+            size: 9.32GB
+            md5: 6b951ae8bd8be79fb8ff1c48bcd47b3b
+        }
+    ]
+}
+
+Source: https://en.stomics.tech/col1940

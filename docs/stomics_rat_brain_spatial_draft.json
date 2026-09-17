@@ -1,0 +1,174 @@
+{
+  "entity_types": [
+    {"id": "biological_source", "name": "Biological source", "is_instantiable": false},
+    {"id": "brain_tissue", "name": "Brain tissue", "parent": "biological_source"},
+    {"id": "fresh_frozen_brain", "name": "Fresh frozen brain", "parent": "brain_tissue"},
+    {"id": "tissue_section", "name": "Tissue section", "parent": "brain_tissue"},
+    {"id": "stained_section", "name": "Stained tissue section", "parent": "tissue_section"},
+    {"id": "spatial_library", "name": "Spatial transcriptomics library", "parent": "stained_section"},
+    {"id": "digital_entity", "name": "Digital entity", "is_instantiable": false},
+    {"id": "fastq_file", "name": "FASTQ sequencing file", "parent": "digital_entity"},
+    {"id": "expression_matrix", "name": "Expression matrix", "parent": "digital_entity"},
+    {"id": "spatial_position_file", "name": "Spatial position file", "parent": "digital_entity"},
+    {"id": "cluster_result", "name": "Cluster result", "parent": "digital_entity"},
+    {"id": "analysis_report", "name": "Analysis report", "parent": "digital_entity"}
+  ],
+  "activity_types": [
+    {"id": "embedding", "name": "Embedding", "input_entity_type": "brain_tissue", "output_entity_type": "fresh_frozen_brain"},
+    {"id": "sectioning", "name": "Sectioning", "input_entity_type": "fresh_frozen_brain", "output_entity_type": "tissue_section"},
+    {"id": "staining", "name": "Staining and permeabilization", "input_entity_type": "tissue_section", "output_entity_type": "stained_section"},
+    {"id": "library_preparation", "name": "Spatial library preparation", "input_entity_type": "stained_section", "output_entity_type": "spatial_library"},
+    {"id": "sequencing", "name": "Sequencing", "input_entity_type": "spatial_library", "output_entity_type": "fastq_file"},
+    {"id": "spatial_analysis", "name": "Spatial transcriptomics analysis", "ports": [{"name": "reads", "direction": "input", "entity_type": "fastq_file"}, {"name": "positions", "direction": "input", "entity_type": "spatial_position_file"}, {"name": "matrix", "direction": "output", "entity_type": "expression_matrix"}, {"name": "archive", "direction": "output", "entity_type": "analysis_report"}]},
+    {"id": "clustering", "name": "Spatial clustering", "ports": [{"name": "matrix", "direction": "input", "entity_type": "expression_matrix"}, {"name": "positions", "direction": "input", "entity_type": "spatial_position_file"}, {"name": "clusters", "direction": "output", "entity_type": "cluster_result"}]}
+  ],
+  "entities": [
+    {
+      "id": "rat_brain_source",
+      "identifier": "D04499F5G6-rat-brain",
+      "type": "brain_tissue",
+      "metadata": {
+        "species": "Rat",
+        "strain": "SD",
+        "sex": "male",
+        "age": "6-8 week",
+        "tissue": "Brain",
+        "source_url": "https://en.stomics.tech/col1940"
+      }
+    },
+    {
+      "id": "rat_brain_fresh_frozen",
+      "identifier": "D04499F5G6-fresh-frozen-brain",
+      "type": "fresh_frozen_brain",
+      "metadata": {"embedding_method": "Fresh frozen", "RIN": 8.2}
+    },
+    {
+      "id": "rat_brain_section",
+      "identifier": "D04499F5G6-section-001",
+      "type": "tissue_section",
+      "metadata": {"section_thickness": "10 um"}
+    },
+    {
+      "id": "rat_brain_stained_section",
+      "identifier": "D04499F5G6-stained-section-001",
+      "type": "stained_section",
+      "metadata": {"staining_type": "ssDNA staining", "permeabilization_time": "14 min"}
+    },
+    {
+      "id": "rat_spatial_library",
+      "identifier": "D04499F5G6-spatial-library-001",
+      "type": "spatial_library",
+      "metadata": {
+        "product": "Stereo-seq FF",
+        "kit_version": "Stereo-seq T FF V1.3",
+        "chip_serial_number": "D04499F5G6",
+        "chip_size": "2 cm x 2 cm"
+      }
+    },
+    {
+      "id": "rat_fastq_r1",
+      "identifier": "D04499F5G6-read-1-fastq",
+      "type": "fastq_file",
+      "metadata": {"file_role": "read 1", "source": "STOmics public demo dataset"}
+    },
+    {
+      "id": "rat_fastq_r2",
+      "identifier": "D04499F5G6-read-2-fastq",
+      "type": "fastq_file",
+      "metadata": {"file_role": "read 2", "source": "STOmics public demo dataset"}
+    },
+    {
+      "id": "rat_expression_matrix",
+      "identifier": "D04499F5G6-expression-matrix",
+      "type": "expression_matrix",
+      "metadata": {
+        "bin200_median_MID": 50043,
+        "bin200_median_gene_type": 10099,
+        "bin20_median_MID": 439,
+        "bin20_median_gene_type": 368,
+        "cell_bin_MID": 751,
+        "cell_bin_gene_type": 601,
+        "sequencing_saturation": "47.7%",
+        "fraction_MID_in_spots_under_tissue": "83.57%",
+        "software": "SAW 8.1"
+      }
+    },
+    {
+      "id": "rat_spatial_positions",
+      "identifier": "D04499F5G6-barcodeToPos.h5",
+      "type": "spatial_position_file",
+      "metadata": {
+        "file_format": "H5",
+        "size": "9.32GB",
+        "md5": "6b951ae8bd8be79fb8ff1c48bcd47b3b"
+      }
+    },
+    {
+      "id": "rat_cluster_result",
+      "identifier": "D04499F5G6-cluster-result",
+      "type": "cluster_result",
+      "metadata": {"software": "StereoMap 4.1"}
+    },
+    {
+      "id": "rat_analysis_archive",
+      "identifier": "D04499F5G6_SC_20250605_182007_4.1.2.tar.gz",
+      "type": "analysis_report",
+      "metadata": {
+        "file_format": "TAR",
+        "size": "541.04MB",
+        "md5": "83b7d9464f5faa56b0c43887786367cc"
+      }
+    }
+  ],
+  "activities": [
+    {
+      "id": "embedding_001",
+      "type": "embedding",
+      "inputs": ["rat_brain_source"],
+      "outputs": ["rat_brain_fresh_frozen"],
+      "information": {"metadata": {"method": "Fresh frozen embedding"}}
+    },
+    {
+      "id": "sectioning_001",
+      "type": "sectioning",
+      "inputs": ["rat_brain_fresh_frozen"],
+      "outputs": ["rat_brain_section"],
+      "information": {"metadata": {"section_thickness": "10 um"}}
+    },
+    {
+      "id": "staining_001",
+      "type": "staining",
+      "inputs": ["rat_brain_section"],
+      "outputs": ["rat_brain_stained_section"],
+      "information": {"metadata": {"staining_type": "ssDNA staining", "permeabilization_time": "14 min"}}
+    },
+    {
+      "id": "library_preparation_001",
+      "type": "library_preparation",
+      "inputs": ["rat_brain_stained_section"],
+      "outputs": ["rat_spatial_library"],
+      "information": {"metadata": {"kit_version": "Stereo-seq T FF V1.3", "chip_serial_number": "D04499F5G6"}}
+    },
+    {
+      "id": "sequencing_001",
+      "type": "sequencing",
+      "inputs": ["rat_spatial_library"],
+      "outputs": ["rat_fastq_r1", "rat_fastq_r2"],
+      "information": {"metadata": {"chip_serial_number": "D04499F5G6"}}
+    },
+    {
+      "id": "spatial_analysis_001",
+      "type": "spatial_analysis",
+      "inputs": {"reads": ["rat_fastq_r1", "rat_fastq_r2"], "positions": ["rat_spatial_positions"]},
+      "outputs": {"matrix": ["rat_expression_matrix"], "archive": ["rat_analysis_archive"]},
+      "information": {"metadata": {"software": "SAW 8.1"}}
+    },
+    {
+      "id": "clustering_001",
+      "type": "clustering",
+      "inputs": {"matrix": ["rat_expression_matrix"], "positions": ["rat_spatial_positions"]},
+      "outputs": {"clusters": ["rat_cluster_result"]},
+      "information": {"metadata": {"software": "StereoMap 4.1"}}
+    }
+  ]
+}
