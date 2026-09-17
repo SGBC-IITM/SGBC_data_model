@@ -34,5 +34,24 @@ services:
       db:
         condition: service_healthy
 
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    environment:
+      MYSQL_DATABASE: sgbc_django
+      MYSQL_USER: sgbc
+      MYSQL_PASSWORD: sgbc_dev_password
+      MYSQL_HOST: db
+      MYSQL_PORT: "3306"
+    volumes:
+      - ./datamodel_demo:/app
+    ports:
+      - "8888:8888"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   mysql_data:
