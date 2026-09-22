@@ -65,6 +65,11 @@ UNFOLD = {
                 "separator": True,
                 "items": [
                     {
+                        "title": "Activity timelines",
+                        "icon": "timeline",
+                        "link": reverse_lazy("activity-timelines"),
+                    },
+                    {
                         "title": "Entities",
                         "icon": "account_tree",
                         "link": reverse_lazy("admin:app1_entity_changelist"),

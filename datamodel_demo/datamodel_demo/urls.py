@@ -17,9 +17,14 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from app1.views import graph_data, graph_explorer
+from app1.views import activity_timeline_dashboard, graph_data, graph_explorer
 
 urlpatterns = [
+    path(
+        "admin/activity-timelines/",
+        admin.site.admin_view(activity_timeline_dashboard),
+        name="activity-timelines",
+    ),
     path("admin/", admin.site.urls),
     path("graph/", graph_explorer, name="graph-explorer"),
     path("api/graph/", graph_data, name="graph-data"),
