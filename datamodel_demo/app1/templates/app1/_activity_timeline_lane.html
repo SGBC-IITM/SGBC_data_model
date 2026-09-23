@@ -36,6 +36,9 @@
                   <button type="button" class="timeline-output" data-entity-id="{{ output.entity_id }}" data-lane-url="{% url 'activity-timeline-lane' output.entity_id %}">
                     <strong>{{ output.entity.identifier }}</strong><span>{{ output.entity.entity_type.name }}</span>
                   </button>
+                  {% with sidecar=output.entity.timeline_sidecars.0 %}
+                    {% if sidecar.metadata.source_url %}<a class="timeline-output-link" href="{{ sidecar.metadata.source_url }}" target="_blank" rel="noopener noreferrer">Open file</a>{% endif %}
+                  {% endwith %}
                 {% endfor %}
               </div>
             </div>

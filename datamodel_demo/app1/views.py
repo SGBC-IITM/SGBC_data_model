@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 
-from .models import Activity, ActivityEntity, ActivityInformationRecord, Entity
+from .models import Activity, ActivityEntity, ActivityInformationRecord, Entity, EntityInformationRecord
 
 
 def _timeline_rows(entity_page):
@@ -32,11 +32,14 @@ def _timeline_rows(entity_page):
 
 def _timeline_entities():
     """Entity queryset with everything needed to render a timeline lane."""
+    entity_sidecars = EntityInformationRecord.objects.order_by("-version", "-recorded_at")
     sidecars = ActivityInformationRecord.objects.select_related(
         "protocol", "operator_agent", "recorded_by_agent"
     ).order_by("-version", "-recorded_at")
     outputs = ActivityEntity.objects.filter(port__direction="output").select_related(
         "entity", "entity__entity_type", "port"
+    ).prefetch_related(
+        Prefetch("entity__information_records", queryset=entity_sidecars, to_attr="timeline_sidecars")
     ).order_by("sequence_no", "entity__identifier")
     links = ActivityEntity.objects.select_related(
         "activity", "activity__activity_type", "port"

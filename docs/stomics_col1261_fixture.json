@@ -1,0 +1,717 @@
+{
+  "objects": [
+    {
+      "model": "entity_type",
+      "key": "biological_material",
+      "fields": {
+        "code": "biological_material",
+        "name": "Biological material",
+        "description": null,
+        "is_instantiable": false
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "whole_mouse_brain",
+      "fields": {
+        "code": "whole_mouse_brain",
+        "name": "Whole mouse brain",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$biological_material"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "ffpe_tissue_section",
+      "fields": {
+        "code": "ffpe_tissue_section",
+        "name": "FFPE tissue section",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$biological_material"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "stained_tissue_section",
+      "fields": {
+        "code": "stained_tissue_section",
+        "name": "Stained tissue section",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$ffpe_tissue_section"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "col1261_spatial_library",
+      "fields": {
+        "code": "col1261_spatial_library",
+        "name": "Spatial transcriptomics library (C04496D6)",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$stained_tissue_section"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "digital_file",
+      "fields": {
+        "code": "digital_file",
+        "name": "Digital file",
+        "description": null,
+        "is_instantiable": false
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "col1261_fastq_file",
+      "fields": {
+        "code": "col1261_fastq_file",
+        "name": "FASTQ file (C04496D6)",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "analysis_matrix",
+      "fields": {
+        "code": "analysis_matrix",
+        "name": "Analysis matrix",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "col1261_spatial_position_file",
+      "fields": {
+        "code": "col1261_spatial_position_file",
+        "name": "Spatial position file (C04496D6)",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "image_file",
+      "fields": {
+        "code": "image_file",
+        "name": "Image file",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "html_report",
+      "fields": {
+        "code": "html_report",
+        "name": "HTML analysis report",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "text_file",
+      "fields": {
+        "code": "text_file",
+        "name": "Text file",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "archive_file",
+      "fields": {
+        "code": "archive_file",
+        "name": "Analysis archive",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_file"
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "sample_accession",
+      "fields": {
+        "code": "sample_accession",
+        "name": "Sample accession",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sample_accession_input",
+      "fields": {
+        "activity_type": "$sample_accession",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$whole_mouse_brain",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sample_accession_output",
+      "fields": {
+        "activity_type": "$sample_accession",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$whole_mouse_brain",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "col1261_sectioning",
+      "fields": {
+        "code": "col1261_sectioning",
+        "name": "Sectioning (C04496D6)",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_sectioning_input",
+      "fields": {
+        "activity_type": "$col1261_sectioning",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$whole_mouse_brain",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_sectioning_output",
+      "fields": {
+        "activity_type": "$col1261_sectioning",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$ffpe_tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "col1261_staining",
+      "fields": {
+        "code": "col1261_staining",
+        "name": "H&E staining (C04496D6)",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_staining_input",
+      "fields": {
+        "activity_type": "$col1261_staining",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$ffpe_tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_staining_output",
+      "fields": {
+        "activity_type": "$col1261_staining",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$stained_tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "col1261_library_preparation",
+      "fields": {
+        "code": "col1261_library_preparation",
+        "name": "Stereo-seq FFPE library preparation (C04496D6)",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_library_preparation_input",
+      "fields": {
+        "activity_type": "$col1261_library_preparation",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$stained_tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_library_preparation_output",
+      "fields": {
+        "activity_type": "$col1261_library_preparation",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$col1261_spatial_library",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "col1261_sequencing",
+      "fields": {
+        "code": "col1261_sequencing",
+        "name": "Sequencing (C04496D6)",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_sequencing_input",
+      "fields": {
+        "activity_type": "$col1261_sequencing",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$col1261_spatial_library",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_sequencing_output",
+      "fields": {
+        "activity_type": "$col1261_sequencing",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$col1261_fastq_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "col1261_spatial_analysis",
+      "fields": {
+        "code": "col1261_spatial_analysis",
+        "name": "STOmics spatial analysis (C04496D6)",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_reads",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "reads",
+        "direction": "input",
+        "entity_type": "$col1261_fastq_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_matrix",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "matrix",
+        "direction": "output",
+        "entity_type": "$analysis_matrix",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_positions",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "positions",
+        "direction": "output",
+        "entity_type": "$col1261_spatial_position_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_image",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "image",
+        "direction": "output",
+        "entity_type": "$image_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_report",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "report",
+        "direction": "output",
+        "entity_type": "$html_report",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_commands",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "commands",
+        "direction": "output",
+        "entity_type": "$text_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "col1261_spatial_analysis_archive",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "name": "archive",
+        "direction": "output",
+        "entity_type": "$archive_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "entity",
+      "key": "mouse_brain",
+      "fields": {
+        "entity_type": "$whole_mouse_brain",
+        "identifier": "C04496D6-mouse-whole-brain",
+        "metadata": {
+          "species": "Mus musculus",
+          "sample_name": "Mouse brain C04496D6",
+          "platform": "Stereo-seq",
+          "source_url": "https://en.stomics.tech/col1261/index.html"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "ffpe_section",
+      "fields": {
+        "entity_type": "$ffpe_tissue_section",
+        "identifier": "C04496D6-FFPE-section-001",
+        "metadata": {
+          "preservation": "FFPE",
+          "source_url": "https://en.stomics.tech/col1261/index.html"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "stained_section",
+      "fields": {
+        "entity_type": "$stained_tissue_section",
+        "identifier": "C04496D6-HE-section-001",
+        "metadata": {
+          "stain": "H&E",
+          "source_url": "https://en.stomics.tech/col1261/index.html"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "mouse_spatial_library",
+      "fields": {
+        "entity_type": "$col1261_spatial_library",
+        "identifier": "C04496D6-spatial-library-001",
+        "metadata": {
+          "assay": "Stereo-seq FFPE V1.0 HE",
+          "source_url": "https://en.stomics.tech/col1261/index.html"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "read_1",
+      "fields": {
+        "entity_type": "$col1261_fastq_file",
+        "identifier": "V350296375_L04_read_1.fq.gz",
+        "metadata": {
+          "format": "FQ",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/reads/V350296375_L04_read_1.fq.gz"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "read_2",
+      "fields": {
+        "entity_type": "$col1261_fastq_file",
+        "identifier": "V350296375_L04_read_2.fq.gz",
+        "metadata": {
+          "format": "FQ",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/reads/V350296375_L04_read_2.fq.gz"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "commands",
+      "fields": {
+        "entity_type": "$text_file",
+        "identifier": "C04496D6_output_command_download",
+        "metadata": {
+          "format": "TXT",
+          "md5": "3392d25ce4d161bceb9ef93dcdb41404",
+          "source_url": "https://enfile.stomics.tech/C04496D6_output_command_download.txt"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "he_image",
+      "fields": {
+        "entity_type": "$image_file",
+        "identifier": "C04496D6_HE_regist.tif",
+        "metadata": {
+          "format": "TIF",
+          "md5": "d85cfd35cae5478030c7df107f96a0fc",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6_HE_regist.tif"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "tissue_gem",
+      "fields": {
+        "entity_type": "$analysis_matrix",
+        "identifier": "C04496D6.tissue.gem.gz",
+        "metadata": {
+          "format": "GEM",
+          "md5": "b67384f5ab18c845c8c60684a43f8d62",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6.tissue.gem.gz"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "tissue_gef",
+      "fields": {
+        "entity_type": "$analysis_matrix",
+        "identifier": "C04496D6.tissue.gef",
+        "metadata": {
+          "format": "GEF",
+          "md5": "49ce65e58c9023fb1361aed08d8f8ecc",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6.tissue.gef"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "raw_gef",
+      "fields": {
+        "entity_type": "$analysis_matrix",
+        "identifier": "C04496D6.raw.gef",
+        "metadata": {
+          "format": "GEF",
+          "md5": "92af3e6f7af7e9717507c9ab73470bcd",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6.raw.gef"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "report",
+      "fields": {
+        "entity_type": "$html_report",
+        "identifier": "C04496D6.report.html",
+        "metadata": {
+          "format": "HTML",
+          "md5": "7f40577f5b39a293c723410c45468b88",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6.report.html"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "visualization_archive",
+      "fields": {
+        "entity_type": "$archive_file",
+        "identifier": "C04496D6_visualization.tar.gz",
+        "metadata": {
+          "format": "TAR",
+          "md5": "8f91271b37c9e79ff0c27b362091a069",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/outs/C04496D6_visualization.tar.gz"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "positions",
+      "fields": {
+        "entity_type": "$col1261_spatial_position_file",
+        "identifier": "C04496D6.barcodeToPos.h5",
+        "metadata": {
+          "format": "H5",
+          "md5": "d91b1fcc651b92e1bbeb83578b232594",
+          "source_url": "https://demo.stomicsdb.tech/C04496D6_Mouse_Whole_Brain_Stereo-seq_FFPE_V1.0_HE/mask/C04496D6.barcodeToPos.h5"
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "accession_001",
+      "fields": {
+        "activity_type": "$sample_accession",
+        "identifier": "C04496D6-accession",
+        "ports": {
+          "input": [],
+          "output": [
+            "$mouse_brain"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "source_page": "https://en.stomics.tech/col1261/index.html",
+            "sample": "Mouse brain C04496D6"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "sectioning_001",
+      "fields": {
+        "activity_type": "$col1261_sectioning",
+        "identifier": "C04496D6-sectioning",
+        "ports": {
+          "input": [
+            "$mouse_brain"
+          ],
+          "output": [
+            "$ffpe_section"
+          ]
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "staining_001",
+      "fields": {
+        "activity_type": "$col1261_staining",
+        "identifier": "C04496D6-HE-staining",
+        "ports": {
+          "input": [
+            "$ffpe_section"
+          ],
+          "output": [
+            "$stained_section"
+          ]
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "library_001",
+      "fields": {
+        "activity_type": "$col1261_library_preparation",
+        "identifier": "C04496D6-library-preparation",
+        "ports": {
+          "input": [
+            "$stained_section"
+          ],
+          "output": [
+            "$mouse_spatial_library"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "assay": "Stereo-seq FFPE V1.0 HE"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "sequencing_001",
+      "fields": {
+        "activity_type": "$col1261_sequencing",
+        "identifier": "C04496D6-sequencing",
+        "ports": {
+          "input": [
+            "$mouse_spatial_library"
+          ],
+          "output": [
+            "$read_1",
+            "$read_2"
+          ]
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "analysis_001",
+      "fields": {
+        "activity_type": "$col1261_spatial_analysis",
+        "identifier": "C04496D6-STOmics-analysis",
+        "ports": {
+          "reads": [
+            "$read_1",
+            "$read_2"
+          ],
+          "matrix": [
+            "$tissue_gem",
+            "$tissue_gef",
+            "$raw_gef"
+          ],
+          "positions": [
+            "$positions"
+          ],
+          "image": [
+            "$he_image"
+          ],
+          "report": [
+            "$report"
+          ],
+          "commands": [
+            "$commands"
+          ],
+          "archive": [
+            "$visualization_archive"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "source_page": "https://en.stomics.tech/col1261/index.html",
+            "workflow": "STOmics spatial analysis"
+          }
+        }
+      }
+    }
+  ]
+}
