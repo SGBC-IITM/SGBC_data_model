@@ -1,0 +1,15 @@
+{
+  "entity_types": [
+    {"id": "material_entity", "name": "Material entity"}
+  ],
+  "activity_types": [
+    {"id": "fixation", "name": "Fixation", "entity_type": "material_entity"}
+  ],
+  "entities": [
+    {"id": "fresh_brain", "identifier": "B001-fresh", "type": "material_entity", "metadata": {"condition": "fresh"}},
+    {"id": "fixed_brain", "identifier": "B001-fixed", "type": "material_entity", "metadata": {"condition": "fixed"}}
+  ],
+  "activities": [
+    {"id": "fixation_001", "type": "fixation", "inputs": ["fresh_brain"], "outputs": ["fixed_brain"], "information": {"metadata": {"status": "completed"}}, "parameters": {"duration": "72 h"}}
+  ]
+}

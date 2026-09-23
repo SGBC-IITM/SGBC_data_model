@@ -1,0 +1,135 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .timeline-shell { --tl-line: #dbe3ec; --tl-muted: #64748b; --tl-accent: #2563eb; }
+    .timeline-header { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; }
+    .timeline-header h1 { font-size:1.5rem; font-weight:700; margin:0; }
+    .timeline-header p { color:var(--tl-muted); margin:.3rem 0 0; }
+    .timeline-filters { display:flex; gap:.6rem; flex-wrap:wrap; }
+    .timeline-filters input,.timeline-filters select { border:1px solid var(--tl-line); border-radius:.5rem; min-height:2.5rem; padding:.45rem .75rem; background:transparent; color:inherit; }
+    .timeline-filters button { background:var(--tl-accent); border:0; border-radius:.5rem; color:white; cursor:pointer; font-weight:600; padding:.5rem 1rem; }
+    .timeline-board { border:1px solid var(--tl-line); border-radius:.75rem; overflow:hidden; background:var(--body-bg, white); }
+    .timeline-row { display:grid; grid-template-columns:15rem minmax(0,1fr); min-height:7rem; border-bottom:1px solid var(--tl-line); }
+    .timeline-row:last-child { border-bottom:0; }
+    .timeline-entity { padding:1.15rem; border-right:1px solid var(--tl-line); }
+    .timeline-entity strong { display:block; font-size:.9rem; overflow-wrap:anywhere; }
+    .timeline-entity span { display:block; color:var(--tl-muted); font-size:.75rem; margin-top:.3rem; }
+    .timeline-track { display:flex; align-items:center; gap:2.4rem; min-width:max-content; padding:1.2rem 2rem; position:relative; }
+    .timeline-track-wrap { overflow-x:auto; }
+    .timeline-track::before { background:var(--tl-line); content:""; height:2px; left:1rem; position:absolute; right:1rem; top:50%; }
+    .timeline-event { background:#eff6ff; border:1px solid #bfdbfe; border-radius:.65rem; color:#1e3a8a; cursor:pointer; min-width:10rem; padding:.7rem .8rem; position:relative; text-align:left; transition:transform .15s,box-shadow .15s; z-index:1; }
+    .timeline-event:hover,.timeline-event:focus-visible { box-shadow:0 5px 16px #0f172a22; outline:2px solid #60a5fa; transform:translateY(-2px); }
+    .timeline-event small,.timeline-event time { display:block; font-size:.7rem; margin-top:.25rem; opacity:.75; }
+    .timeline-empty { color:var(--tl-muted); font-size:.85rem; position:relative; z-index:1; }
+    .timeline-pagination { align-items:center; display:flex; justify-content:space-between; margin-top:1rem; }
+    .timeline-pagination a { border:1px solid var(--tl-line); border-radius:.45rem; color:inherit; padding:.45rem .75rem; text-decoration:none; }
+    .timeline-modal { border:0; border-radius:.8rem; box-shadow:0 24px 70px #02061766; color:inherit; max-height:85vh; max-width:42rem; padding:0; width:calc(100% - 2rem); }
+    .timeline-modal::backdrop { background:#0f172a99; backdrop-filter:blur(2px); }
+    .timeline-modal-head { align-items:center; border-bottom:1px solid var(--tl-line); display:flex; justify-content:space-between; padding:1rem 1.25rem; }
+    .timeline-modal-head h2 { font-size:1.1rem; margin:0; }
+    .timeline-modal-head button { background:transparent; border:0; color:inherit; cursor:pointer; font-size:1.6rem; }
+    .timeline-modal-body { overflow:auto; padding:1.25rem; }
+    .timeline-modal-body dl { display:grid; grid-template-columns:9rem 1fr; margin:0; }
+    .timeline-modal-body dt,.timeline-modal-body dd { border-bottom:1px solid var(--tl-line); margin:0; padding:.65rem 0; }
+    .timeline-modal-body dt { color:var(--tl-muted); font-size:.75rem; font-weight:600; text-transform:uppercase; }
+    .timeline-modal-body dd { overflow-wrap:anywhere; white-space:pre-wrap; }
+    .timeline-outputs { border-top:1px solid var(--tl-line); margin-top:1rem; padding-top:1rem; }
+    .timeline-outputs h3 { font-size:.8rem; margin:0 0 .7rem; text-transform:uppercase; }
+    .timeline-output-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .timeline-output { background:#f8fafc; border:1px solid var(--tl-line); border-radius:.55rem; color:inherit; cursor:pointer; padding:.55rem .75rem; text-align:left; }
+    .timeline-output:hover,.timeline-output:focus-visible { border-color:var(--tl-accent); outline:2px solid #60a5fa; }
+    .timeline-output strong,.timeline-output span { display:block; }
+    .timeline-output span { color:var(--tl-muted); font-size:.7rem; margin-top:.15rem; }
+    .timeline-output[disabled] { cursor:wait; opacity:.55; }
+    .timeline-output-link { align-self:center; color:var(--tl-accent); font-size:.75rem; padding:.35rem .2rem; white-space:nowrap; }
+    .timeline-row-added { animation:timeline-arrive 1.2s ease-out; }
+    @keyframes timeline-arrive { from { background:#dbeafe; } to { background:transparent; } }
+    .timeline-no-results { color:var(--tl-muted); padding:3rem; text-align:center; }
+    .dark .timeline-shell { --tl-line:#334155; --tl-muted:#94a3b8; }
+    .dark .timeline-event { background:#172554; border-color:#1d4ed8; color:#dbeafe; }
+    .dark .timeline-output { background:#1e293b; }
+    @media (prefers-color-scheme:dark) { .timeline-shell { --tl-line:#334155; --tl-muted:#94a3b8; } .timeline-event { background:#172554; border-color:#1d4ed8; color:#dbeafe; } }
+    @media (max-width:700px) { .timeline-header { align-items:stretch; flex-direction:column; } .timeline-row { grid-template-columns:9rem minmax(0,1fr); } .timeline-modal-body dl { grid-template-columns:1fr; } .timeline-modal-body dt { border-bottom:0; padding-bottom:0; } }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="timeline-shell">
+  <div class="timeline-header">
+    <div><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>
+    <form class="timeline-filters" method="get">
+      <input name="q" value="{{ query }}" placeholder="Search entities…" aria-label="Search entities">
+      <select name="entity_type" aria-label="Filter by entity type">
+        <option value="">All entity types</option>
+        {% for id, name in entity_types %}<option value="{{ id }}" {% if selected_entity_type == id|stringformat:"s" %}selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+      <button type="submit">Filter</button>
+    </form>
+  </div>
+
+  <div class="timeline-board" id="timeline-board">
+    {% for row in rows %}
+      {% include "app1/_activity_timeline_lane.html" with row=row %}
+    {% empty %}<div class="timeline-no-results">No entities match these filters.</div>{% endfor %}
+  </div>
+
+  {% if page.paginator.num_pages > 1 %}
+    <nav class="timeline-pagination" aria-label="Timeline pages">
+      <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      <span>
+        {% if page.has_previous %}<a href="?q={{ query|urlencode }}&entity_type={{ selected_entity_type|urlencode }}&page={{ page.previous_page_number }}">Previous</a>{% endif %}
+        {% if page.has_next %}<a href="?q={{ query|urlencode }}&entity_type={{ selected_entity_type|urlencode }}&page={{ page.next_page_number }}">Next</a>{% endif %}
+      </span>
+    </nav>
+  {% endif %}
+</div>
+
+<dialog class="timeline-modal" id="activity-modal" aria-labelledby="activity-modal-title">
+  <div class="timeline-modal-head"><h2 id="activity-modal-title">Activity details</h2><button type="button" aria-label="Close">×</button></div>
+  <div class="timeline-modal-body"></div>
+</dialog>
+<script>
+(() => {
+  const modal = document.getElementById('activity-modal');
+  const body = modal.querySelector('.timeline-modal-body');
+  const board = document.getElementById('timeline-board');
+  let trigger;
+  document.addEventListener('click', async event => {
+    const activity = event.target.closest('.timeline-event');
+    if (activity) {
+      trigger = activity;
+      body.replaceChildren(document.getElementById(activity.dataset.details).content.cloneNode(true));
+      modal.showModal();
+      return;
+    }
+
+    const output = event.target.closest('.timeline-output');
+    if (!output) return;
+    const selector = `.timeline-row[data-entity-id="${output.dataset.entityId}"]`;
+    let lane = board.querySelector(selector);
+    if (!lane) {
+      output.disabled = true;
+      try {
+        const response = await fetch(output.dataset.laneUrl, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+        if (!response.ok) throw new Error(`Unable to load lane (${response.status})`);
+        board.insertAdjacentHTML('beforeend', await response.text());
+        lane = board.querySelector(selector);
+        lane.classList.add('timeline-row-added');
+      } catch (error) {
+        output.disabled = false;
+        output.title = error.message;
+        return;
+      }
+    }
+    modal.close();
+    lane.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  modal.querySelector('button').addEventListener('click', () => modal.close());
+  modal.addEventListener('click', event => { if (event.target === modal) modal.close(); });
+  modal.addEventListener('close', () => trigger?.focus());
+})();
+</script>
+{% endblock %}

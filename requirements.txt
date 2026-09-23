@@ -1,3 +1,4 @@
 Django==6.1.1
 mysqlclient==2.2.7
 django-unfold==0.105.0
+jupyterlab==4.4.9

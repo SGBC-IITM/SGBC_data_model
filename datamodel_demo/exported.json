@@ -1,0 +1,157 @@
+{
+  "format": "sgbc-provenance-export/v1",
+  "root_entity_id": "2",
+  "entities": [
+    {
+      "id": "2",
+      "identifier": "donor:1949/26",
+      "entity_type": "material_entity",
+      "physical_identity": null,
+      "created_at": "2026-09-15T07:01:50.626440+00:00",
+      "provenance": null
+    },
+    {
+      "id": "3",
+      "identifier": "sample:HB104",
+      "entity_type": "material_entity",
+      "physical_identity": "1949/26",
+      "created_at": "2026-09-15T07:01:50.640481+00:00",
+      "provenance": null
+    }
+  ],
+  "activities": [
+    {
+      "id": "1",
+      "identifier": "1949/26:extraction",
+      "activity_type": "extraction",
+      "created_at": "2026-09-15T07:01:50.705301+00:00"
+    },
+    {
+      "id": "2",
+      "identifier": "1949/26:transport",
+      "activity_type": "transport",
+      "created_at": "2026-09-15T07:01:50.728389+00:00"
+    }
+  ],
+  "activity_entity_links": [
+    {
+      "activity_id": "1",
+      "entity_id": "2",
+      "port": "input",
+      "direction": "input",
+      "sequence_no": 1
+    },
+    {
+      "activity_id": "1",
+      "entity_id": "3",
+      "port": "output",
+      "direction": "output",
+      "sequence_no": 1
+    },
+    {
+      "activity_id": "2",
+      "entity_id": "3",
+      "port": "input",
+      "direction": "input",
+      "sequence_no": 1
+    },
+    {
+      "activity_id": "2",
+      "entity_id": "3",
+      "port": "output",
+      "direction": "output",
+      "sequence_no": 1
+    }
+  ],
+  "entity_information_records": [
+    {
+      "id": "2",
+      "version": 1,
+      "valid_from": null,
+      "valid_until": null,
+      "recorded_at": "2026-09-15T07:01:50.631585+00:00",
+      "recorded_by_agent_id": null,
+      "supersedes_record_id": null,
+      "description": null,
+      "metadata": {
+        "age": 39,
+        "sex": "M",
+        "cause_of_death": "suicide (hanging)",
+        "body_preservation": "4degC",
+        "date_time_of_death": "11-08-2026, 3.30pm"
+      },
+      "entity_id": "2",
+      "information_record_type": null,
+      "name": null,
+      "status": null
+    },
+    {
+      "id": "3",
+      "version": 1,
+      "valid_from": null,
+      "valid_until": null,
+      "recorded_at": "2026-09-15T07:01:50.643660+00:00",
+      "recorded_by_agent_id": null,
+      "supersedes_record_id": null,
+      "description": null,
+      "metadata": {
+        "type": "adult human brain",
+        "sample_name": "HB04"
+      },
+      "entity_id": "3",
+      "information_record_type": null,
+      "name": null,
+      "status": null
+    }
+  ],
+  "activity_information_records": [
+    {
+      "id": "1",
+      "version": 1,
+      "valid_from": null,
+      "valid_until": null,
+      "recorded_at": "2026-09-15T07:01:50.714856+00:00",
+      "recorded_by_agent_id": null,
+      "supersedes_record_id": null,
+      "description": null,
+      "metadata": {
+        "site": "KMC",
+        "date_time": "12-08-2026, 2.00pm",
+        "post_mortem_interval": "22.5 hrs"
+      },
+      "activity_id": "1",
+      "status": null,
+      "started_at": null,
+      "ended_at": null,
+      "protocol_id": null,
+      "operator_agent_id": null,
+      "notes": null
+    },
+    {
+      "id": "2",
+      "version": 1,
+      "valid_from": null,
+      "valid_until": null,
+      "recorded_at": "2026-09-15T07:01:50.736027+00:00",
+      "recorded_by_agent_id": null,
+      "supersedes_record_id": null,
+      "description": null,
+      "metadata": {
+        "date_arrived": "12-08-2026, 4.40pm"
+      },
+      "activity_id": "2",
+      "status": null,
+      "started_at": null,
+      "ended_at": null,
+      "protocol_id": null,
+      "operator_agent_id": null,
+      "notes": null
+    }
+  ],
+  "activity_parameters": [],
+  "accession_information": [],
+  "external_references": [],
+  "entity_relations": [],
+  "agents": [],
+  "protocols": []
+}

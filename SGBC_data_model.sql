@@ -24,13 +24,7 @@ CREATE TABLE `entity` (
   `id` char(36) PRIMARY KEY,
   `entity_type_id` char(36) NOT NULL,
   `identifier` varchar(255) UNIQUE NOT NULL,
-  `physical_identity_id` char(36),
-  `created_at` timestamp NOT NULL
-);
-
-CREATE TABLE `physical_identity` (
-  `id` char(36) PRIMARY KEY,
-  `identifier` varchar(255) UNIQUE NOT NULL,
+  `physical_identity` varchar(255),
   `created_at` timestamp NOT NULL
 );
 
@@ -89,7 +83,6 @@ CREATE TABLE `activity_information_record` (
   `ended_at` timestamp,
   `protocol_id` char(36),
   `operator_agent_id` char(36),
-  `instrument_id` char(36),
   `description` text,
   `notes` text,
   `metadata` json
@@ -152,18 +145,6 @@ CREATE TABLE `agent` (
   `agent_type` ENUM ('person', 'organization', 'software', 'service') NOT NULL,
   `name` varchar(255) NOT NULL,
   `affiliation` varchar(255),
-  `created_at` timestamp NOT NULL,
-  `metadata` json
-);
-
-CREATE TABLE `instrument` (
-  `id` char(36) PRIMARY KEY,
-  `identifier` varchar(255) UNIQUE NOT NULL,
-  `instrument_type` varchar(255),
-  `manufacturer` varchar(255),
-  `model` varchar(255),
-  `serial_number` varchar(255),
-  `software_version` varchar(255),
   `created_at` timestamp NOT NULL,
   `metadata` json
 );
@@ -323,7 +304,7 @@ Mutable properties such as names, classifications,
 locations, condition, status, etc. belong in
 entity_information_record.
 
-physical_identity_id can associate multiple provenance
+physical_identity can associate multiple provenance
 states with the same physical object.
 
 Example:
@@ -336,10 +317,6 @@ After physical subdivision:
 
 left hemisphere  -> P002
 right hemisphere -> P003
-';
-
-ALTER TABLE `physical_identity` COMMENT = 'Represents persistent physical identity independently
-of processing state.
 ';
 
 ALTER TABLE `activity` COMMENT = 'Immutable provenance event.
@@ -400,7 +377,6 @@ about that event.
 Includes execution details such as:
   timing
   operator
-  instrument
   protocol
   status
   notes
@@ -508,8 +484,6 @@ ALTER TABLE `activity_type` ADD FOREIGN KEY (`parent_id`) REFERENCES `activity_t
 
 ALTER TABLE `entity` ADD FOREIGN KEY (`entity_type_id`) REFERENCES `entity_type` (`id`);
 
-ALTER TABLE `entity` ADD FOREIGN KEY (`physical_identity_id`) REFERENCES `physical_identity` (`id`);
-
 ALTER TABLE `activity` ADD FOREIGN KEY (`activity_type_id`) REFERENCES `activity_type` (`id`);
 
 ALTER TABLE `activity_entity` ADD FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`);
@@ -541,8 +515,6 @@ ALTER TABLE `entity_information_record` ADD FOREIGN KEY (`recorded_by_agent_id`)
 ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`recorded_by_agent_id`) REFERENCES `agent` (`id`);
 
 ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`operator_agent_id`) REFERENCES `agent` (`id`);
-
-ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`instrument_id`) REFERENCES `instrument` (`id`);
 
 -- ALTER TABLE `activity_information_record` ADD FOREIGN KEY (`id`) REFERENCES `accession_information` (`activity_information_record_id`);
 ALTER TABLE `accession_information`

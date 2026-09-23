@@ -1,0 +1,713 @@
+{
+  "objects": [
+    {
+      "model": "entity_type",
+      "key": "biological_source",
+      "fields": {
+        "code": "biological_source",
+        "name": "Biological source",
+        "description": null,
+        "is_instantiable": false
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "brain_tissue",
+      "fields": {
+        "code": "brain_tissue",
+        "name": "Brain tissue",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$biological_source"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "fresh_frozen_brain",
+      "fields": {
+        "code": "fresh_frozen_brain",
+        "name": "Fresh frozen brain",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$brain_tissue"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "tissue_section",
+      "fields": {
+        "code": "tissue_section",
+        "name": "Tissue section",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$brain_tissue"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "stained_section",
+      "fields": {
+        "code": "stained_section",
+        "name": "Stained tissue section",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$tissue_section"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "spatial_library",
+      "fields": {
+        "code": "spatial_library",
+        "name": "Spatial transcriptomics library",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$stained_section"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "digital_entity",
+      "fields": {
+        "code": "digital_entity",
+        "name": "Digital entity",
+        "description": null,
+        "is_instantiable": false
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "fastq_file",
+      "fields": {
+        "code": "fastq_file",
+        "name": "FASTQ sequencing file",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_entity"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "expression_matrix",
+      "fields": {
+        "code": "expression_matrix",
+        "name": "Expression matrix",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_entity"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "spatial_position_file",
+      "fields": {
+        "code": "spatial_position_file",
+        "name": "Spatial position file",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_entity"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "cluster_result",
+      "fields": {
+        "code": "cluster_result",
+        "name": "Cluster result",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_entity"
+      }
+    },
+    {
+      "model": "entity_type",
+      "key": "analysis_report",
+      "fields": {
+        "code": "analysis_report",
+        "name": "Analysis report",
+        "description": null,
+        "is_instantiable": true,
+        "parent": "$digital_entity"
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "embedding",
+      "fields": {
+        "code": "embedding",
+        "name": "Embedding",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "embedding_input",
+      "fields": {
+        "activity_type": "$embedding",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$brain_tissue",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "embedding_output",
+      "fields": {
+        "activity_type": "$embedding",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$fresh_frozen_brain",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "sectioning",
+      "fields": {
+        "code": "sectioning",
+        "name": "Sectioning",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sectioning_input",
+      "fields": {
+        "activity_type": "$sectioning",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$fresh_frozen_brain",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sectioning_output",
+      "fields": {
+        "activity_type": "$sectioning",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "staining",
+      "fields": {
+        "code": "staining",
+        "name": "Staining and permeabilization",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "staining_input",
+      "fields": {
+        "activity_type": "$staining",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$tissue_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "staining_output",
+      "fields": {
+        "activity_type": "$staining",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$stained_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "library_preparation",
+      "fields": {
+        "code": "library_preparation",
+        "name": "Spatial library preparation",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "library_preparation_input",
+      "fields": {
+        "activity_type": "$library_preparation",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$stained_section",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "library_preparation_output",
+      "fields": {
+        "activity_type": "$library_preparation",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$spatial_library",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "sequencing",
+      "fields": {
+        "code": "sequencing",
+        "name": "Sequencing",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sequencing_input",
+      "fields": {
+        "activity_type": "$sequencing",
+        "name": "input",
+        "direction": "input",
+        "entity_type": "$spatial_library",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "sequencing_output",
+      "fields": {
+        "activity_type": "$sequencing",
+        "name": "output",
+        "direction": "output",
+        "entity_type": "$fastq_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "spatial_analysis",
+      "fields": {
+        "code": "spatial_analysis",
+        "name": "Spatial transcriptomics analysis",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "spatial_analysis_reads",
+      "fields": {
+        "activity_type": "$spatial_analysis",
+        "name": "reads",
+        "direction": "input",
+        "entity_type": "$fastq_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "spatial_analysis_positions",
+      "fields": {
+        "activity_type": "$spatial_analysis",
+        "name": "positions",
+        "direction": "input",
+        "entity_type": "$spatial_position_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "spatial_analysis_matrix",
+      "fields": {
+        "activity_type": "$spatial_analysis",
+        "name": "matrix",
+        "direction": "output",
+        "entity_type": "$expression_matrix",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "spatial_analysis_archive",
+      "fields": {
+        "activity_type": "$spatial_analysis",
+        "name": "archive",
+        "direction": "output",
+        "entity_type": "$analysis_report",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type",
+      "key": "clustering",
+      "fields": {
+        "code": "clustering",
+        "name": "Spatial clustering",
+        "description": null,
+        "is_instantiable": true
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "clustering_matrix",
+      "fields": {
+        "activity_type": "$clustering",
+        "name": "matrix",
+        "direction": "input",
+        "entity_type": "$expression_matrix",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "clustering_positions",
+      "fields": {
+        "activity_type": "$clustering",
+        "name": "positions",
+        "direction": "input",
+        "entity_type": "$spatial_position_file",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "activity_type_port",
+      "key": "clustering_clusters",
+      "fields": {
+        "activity_type": "$clustering",
+        "name": "clusters",
+        "direction": "output",
+        "entity_type": "$cluster_result",
+        "min_count": 0,
+        "max_count": null
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_brain_source",
+      "fields": {
+        "entity_type": "$brain_tissue",
+        "identifier": "D04499F5G6-rat-brain",
+        "metadata": {
+          "species": "Rat",
+          "strain": "SD",
+          "sex": "male",
+          "age": "6-8 week",
+          "tissue": "Brain",
+          "source_url": "https://en.stomics.tech/col1940"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_brain_fresh_frozen",
+      "fields": {
+        "entity_type": "$fresh_frozen_brain",
+        "identifier": "D04499F5G6-fresh-frozen-brain",
+        "metadata": {
+          "embedding_method": "Fresh frozen",
+          "RIN": 8.2
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_brain_section",
+      "fields": {
+        "entity_type": "$tissue_section",
+        "identifier": "D04499F5G6-section-001",
+        "metadata": {
+          "section_thickness": "10 um"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_brain_stained_section",
+      "fields": {
+        "entity_type": "$stained_section",
+        "identifier": "D04499F5G6-stained-section-001",
+        "metadata": {
+          "staining_type": "ssDNA staining",
+          "permeabilization_time": "14 min"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_spatial_library",
+      "fields": {
+        "entity_type": "$spatial_library",
+        "identifier": "D04499F5G6-spatial-library-001",
+        "metadata": {
+          "product": "Stereo-seq FF",
+          "kit_version": "Stereo-seq T FF V1.3",
+          "chip_serial_number": "D04499F5G6",
+          "chip_size": "2 cm x 2 cm"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_fastq_r1",
+      "fields": {
+        "entity_type": "$fastq_file",
+        "identifier": "D04499F5G6-read-1-fastq",
+        "metadata": {
+          "file_role": "read 1",
+          "source": "STOmics public demo dataset"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_fastq_r2",
+      "fields": {
+        "entity_type": "$fastq_file",
+        "identifier": "D04499F5G6-read-2-fastq",
+        "metadata": {
+          "file_role": "read 2",
+          "source": "STOmics public demo dataset"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_expression_matrix",
+      "fields": {
+        "entity_type": "$expression_matrix",
+        "identifier": "D04499F5G6-expression-matrix",
+        "metadata": {
+          "bin200_median_MID": 50043,
+          "bin200_median_gene_type": 10099,
+          "bin20_median_MID": 439,
+          "bin20_median_gene_type": 368,
+          "cell_bin_MID": 751,
+          "cell_bin_gene_type": 601,
+          "sequencing_saturation": "47.7%",
+          "fraction_MID_in_spots_under_tissue": "83.57%",
+          "software": "SAW 8.1"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_spatial_positions",
+      "fields": {
+        "entity_type": "$spatial_position_file",
+        "identifier": "D04499F5G6-barcodeToPos.h5",
+        "metadata": {
+          "file_format": "H5",
+          "size": "9.32GB",
+          "md5": "6b951ae8bd8be79fb8ff1c48bcd47b3b"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_cluster_result",
+      "fields": {
+        "entity_type": "$cluster_result",
+        "identifier": "D04499F5G6-cluster-result",
+        "metadata": {
+          "software": "StereoMap 4.1"
+        }
+      }
+    },
+    {
+      "model": "entity",
+      "key": "rat_analysis_archive",
+      "fields": {
+        "entity_type": "$analysis_report",
+        "identifier": "D04499F5G6_SC_20250605_182007_4.1.2.tar.gz",
+        "metadata": {
+          "file_format": "TAR",
+          "size": "541.04MB",
+          "md5": "83b7d9464f5faa56b0c43887786367cc"
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "embedding_001",
+      "fields": {
+        "activity_type": "$embedding",
+        "identifier": "embedding_001",
+        "ports": {
+          "input": [
+            "$rat_brain_source"
+          ],
+          "output": [
+            "$rat_brain_fresh_frozen"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "method": "Fresh frozen embedding"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "sectioning_001",
+      "fields": {
+        "activity_type": "$sectioning",
+        "identifier": "sectioning_001",
+        "ports": {
+          "input": [
+            "$rat_brain_fresh_frozen"
+          ],
+          "output": [
+            "$rat_brain_section"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "section_thickness": "10 um"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "staining_001",
+      "fields": {
+        "activity_type": "$staining",
+        "identifier": "staining_001",
+        "ports": {
+          "input": [
+            "$rat_brain_section"
+          ],
+          "output": [
+            "$rat_brain_stained_section"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "staining_type": "ssDNA staining",
+            "permeabilization_time": "14 min"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "library_preparation_001",
+      "fields": {
+        "activity_type": "$library_preparation",
+        "identifier": "library_preparation_001",
+        "ports": {
+          "input": [
+            "$rat_brain_stained_section"
+          ],
+          "output": [
+            "$rat_spatial_library"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "kit_version": "Stereo-seq T FF V1.3",
+            "chip_serial_number": "D04499F5G6"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "sequencing_001",
+      "fields": {
+        "activity_type": "$sequencing",
+        "identifier": "sequencing_001",
+        "ports": {
+          "input": [
+            "$rat_spatial_library"
+          ],
+          "output": [
+            "$rat_fastq_r1",
+            "$rat_fastq_r2"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "chip_serial_number": "D04499F5G6"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "spatial_analysis_001",
+      "fields": {
+        "activity_type": "$spatial_analysis",
+        "identifier": "spatial_analysis_001",
+        "ports": {
+          "reads": [
+            "$rat_fastq_r1",
+            "$rat_fastq_r2"
+          ],
+          "positions": [
+            "$rat_spatial_positions"
+          ],
+          "matrix": [
+            "$rat_expression_matrix"
+          ],
+          "archive": [
+            "$rat_analysis_archive"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "software": "SAW 8.1"
+          }
+        }
+      }
+    },
+    {
+      "model": "activity",
+      "key": "clustering_001",
+      "fields": {
+        "activity_type": "$clustering",
+        "identifier": "clustering_001",
+        "ports": {
+          "matrix": [
+            "$rat_expression_matrix"
+          ],
+          "positions": [
+            "$rat_spatial_positions"
+          ],
+          "clusters": [
+            "$rat_cluster_result"
+          ]
+        },
+        "information": {
+          "metadata": {
+            "software": "StereoMap 4.1"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "objects": [
+    {"model": "entity_type", "key": "brain", "fields": {"code": "brain", "name": "Whole Brain", "is_instantiable": true}},
+    {"model": "activity_type", "key": "fixation", "fields": {"code": "fixation", "name": "Fixation", "is_instantiable": true}},
+    {"model": "entity", "key": "fresh", "fields": {"entity_type": "$brain", "identifier": "B001-fresh"}},
+    {"model": "entity", "key": "fixed", "fields": {"entity_type": "$brain", "identifier": "B001-fixed"}},
+    {"model": "activity", "key": "fix", "fields": {"activity_type": "$fixation", "identifier": "FIX-001", "ports": {}, "information": {"notes": "Example"}}}
+  ]
+}

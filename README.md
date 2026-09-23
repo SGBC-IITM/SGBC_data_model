@@ -1,3 +1,63 @@
+# SGBC Data Model
+
+Django-first provenance model for biospecimens, biosamples, activities, and
+their versioned information records.
+
+## Development
+
+The project uses Django-managed models with MySQL. The Compose database is
+named `sgbc_django`.
+
+```bash
+docker compose up -d --build
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+```
+
+Open the admin at <http://localhost:8000/admin/>.
+
+Models are declared in `datamodel_demo/app1/models.py`; migrations are the
+source of truth for the database schema. Do not use `inspectdb` or import the
+legacy SQL files for this branch.
+
+## Useful commands
+
+```bash
+docker compose exec web python manage.py makemigrations app1
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py check
+```
+
+The legacy conceptual DBML and SQL artifacts remain in the repository for
+reference.
+
+## Schema utilities
+
+Use `app1.utils` to create validated entities and activities, append information
+records, traverse provenance, query/group by type, and validate existing entries.
+See [the utility API and examples](docs/schema_utilities.md).
+
+JSON fixtures can be loaded with `python manage.py load_json_fixture path.json`
+(use `-` for stdin). The format is documented in [example_fixture.json](docs/example_fixture.json).
+
+To export a populated, complete provenance record as JSON, select any entity in
+the connected graph:
+
+```bash
+python manage.py export_provenance B001-fixed -o provenance.json
+```
+
+The export preserves the graph rather than flattening it into a tree: it includes
+all linked entities and activities, every sidecar revision and parameter, port
+edges, provenance boundaries, external references, relations, agents, and
+protocols. Its format is documented in [schema_utilities.md](docs/schema_utilities.md).
+
+Run local tests without a database service:
+
+```bash
+cd datamodel_demo
+python manage.py test app1 --settings=datamodel_demo.test_settings
+```
 # SGBC_data_model
 
 *I want to make a data model including biospecimen and biosample, which models relationships through the abstraction of Activity - eg in post mortem whole brain histology, the biospecimen is the donor, and the activity of extraction produces the biosample 'brain'. Now the biosample can again be acted upon, like perfusion, fixation, freezing, storing, etc, each producing an artifact. I want to model this using dbml*
@@ -69,6 +129,31 @@ processing
     ├── MRI
     └── spatial_transcriptomics
 </pre>
+
+## Activity is Multi-input multi-output 
+
+0 → N    accession/source
+1 → 1    fixation
+1 → N    sectioning/slabbing
+N → 1    pooling/merging
+N → N    registration, fusion, multiplexed processing
+N → 0    disposal/transfer-out
+
+## Abstract, concrete, materialized
+
+| EntityType         | Concrete? | Tier-3 materialized? |
+| ------------------ | --------: | -------------------: |
+| BiologicalMaterial |        No |                   No |
+| Biospecimen        |        No |                   No |
+| WholeBrain         |       Yes |                  Yes |
+| TissueBlock        |       Yes |                  Yes |
+| Section            |       Yes |                  Yes |
+| ReagentLot         |       Yes |                   No |
+| DigitalArtifact    |        No |                   No |
+| WSI                |       Yes |                  Yes |
+| QCImage            |       Yes |                   No |
+
+
 
 ## Information sidecars
 *i want to implement sidecar information records for all entities and also activities. The information record decouples the entity's mutable fields from the immutable ones (which will be attributes in the entity). Also the information record for the activity captures the set of process parameters (name,value pairs)*
@@ -160,6 +245,16 @@ Entity ── input ──► Activity ── output ──► Entity
              EntityInformationRecord
 </pre>
 
+## Information schema
+
+| Model | What it represents | Example |
+|---|---|---|
+| `ActivityType` | Category of operation | Fixation |
+| `Activity` | One specific event | Fixation event `FIX-001` |
+| `Protocol` | Intended procedure, with a version | Whole Brain Fixation, v1.0 |
+| `ActivityInformationRecord` | Recorded details of that event | Protocol used, operator, timing, status |
+| `ProtocolParameter` | Expected parameters | Target duration: 72 hours |
+| `ActivityParameter` | Actual execution parameters | Recorded duration: 76 hours |
 
 ## DB diagram
 <pre>
@@ -230,15 +325,6 @@ Compose hostname `db` resolves correctly. If running them directly on the
 host, use `python manage.py ...`; the settings default to `127.0.0.1`, which
 uses the published MySQL port.
 
-The Compose database service includes the MySQL client CLI. To instantiate the
-schema and load the sample data, run these commands from the repository root,
-in this order:
-
-```bash
-docker compose exec -T db mysql -usgbc -psgbc_dev_password sgbc < SGBC_data_model.sql
-docker compose exec -T db mysql -usgbc -psgbc_dev_password sgbc < SGBC_sample_data.sql
-```
-
 You can connect interactively with:
 
 ```bash
@@ -248,17 +334,6 @@ docker compose exec db mysql -usgbc -psgbc_dev_password sgbc
 Stop the services with `docker compose down`. The named `mysql_data` volume
 keeps the database between restarts; use `docker compose down -v` to remove it.
 
-### Generate Django models and admin
-
-After creating the schema, regenerate the unmanaged Django models with:
-
-```bash
-./scripts/inspectdb.sh
-```
-
 The script reads the table names from `SGBC_data_model.sql`, runs `inspectdb`
 inside the web container, writes `datamodel_demo/app1/models.py`, and runs
 `manage.py check`. The models are automatically registered in Django admin.
-
-
-

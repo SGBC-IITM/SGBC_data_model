@@ -202,7 +202,7 @@ Table entity {
   identifier varchar [not null, unique]
 
   // Optional identity shared across states of same physical object
-  physical_identity_id uuid
+  physical_identity varchar
 
   created_at timestamp [not null]
 
@@ -214,7 +214,7 @@ Table entity {
   locations, condition, status, etc. belong in
   entity_information_record.
 
-  physical_identity_id can associate multiple provenance
+  physical_identity can associate multiple provenance
   states with the same physical object.
 
   Example:
@@ -231,27 +231,6 @@ Table entity {
 }
 
 Ref: entity.entity_type_id > entity_type.id
-
-
-
-//////////////////////////////////////////////////////////////
-// PHYSICAL IDENTITY
-//////////////////////////////////////////////////////////////
-
-Table physical_identity {
-  id uuid [pk]
-
-  identifier varchar [not null, unique]
-
-  created_at timestamp [not null]
-
-  Note: '''
-  Represents persistent physical identity independently
-  of processing state.
-  '''
-}
-
-Ref: entity.physical_identity_id >? physical_identity.id
 
 
 
@@ -451,7 +430,6 @@ Table activity_information_record {
   protocol_id uuid
 
   operator_agent_id uuid
-  instrument_id uuid
 
   description text
   notes text
@@ -473,7 +451,6 @@ Table activity_information_record {
   Includes execution details such as:
     timing
     operator
-    instrument
     protocol
     status
     notes
@@ -680,32 +657,6 @@ Ref: entity_information_record.recorded_by_agent_id >? agent.id
 
 Ref: activity_information_record.recorded_by_agent_id >? agent.id
 Ref: activity_information_record.operator_agent_id >? agent.id
-
-
-
-//////////////////////////////////////////////////////////////
-// INSTRUMENTS
-//////////////////////////////////////////////////////////////
-
-Table instrument {
-  id uuid [pk]
-
-  identifier varchar [not null, unique]
-
-  instrument_type varchar
-
-  manufacturer varchar
-  model varchar
-  serial_number varchar
-
-  software_version varchar
-
-  created_at timestamp [not null]
-
-  metadata jsonb
-}
-
-Ref: activity_information_record.instrument_id >? instrument.id
 
 
 

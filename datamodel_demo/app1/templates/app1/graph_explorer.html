@@ -1,0 +1,39 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SGBC provenance graph</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    :root { color-scheme: dark; --bg:#10151d; --panel:#18212c; --line:#314252; --text:#e7eef5; --muted:#9aaabd; }
+    * { box-sizing:border-box } body { margin:0; font:14px system-ui,sans-serif; background:var(--bg); color:var(--text); overflow:hidden }
+    header { height:64px; padding:12px 20px; display:flex; align-items:center; gap:18px; background:#141c25; border-bottom:1px solid var(--line) }
+    h1 { font-size:18px; margin:0; letter-spacing:.02em } .subtitle { color:var(--muted); font-size:12px }
+    input { width:230px; background:var(--panel); border:1px solid var(--line); color:var(--text); padding:8px 10px; border-radius:6px }
+    main { display:flex; height:calc(100vh - 64px) } #viz { flex:1; position:relative } svg { width:100%; height:100%; cursor:grab } svg:active { cursor:grabbing }
+    aside { width:290px; border-left:1px solid var(--line); background:var(--panel); padding:20px; overflow:auto } aside h2 { margin:0 0 14px; font-size:15px }
+    .hint { color:var(--muted); line-height:1.5 } .legend { position:absolute; left:18px; bottom:18px; background:#18212cdd; padding:10px 12px; border:1px solid var(--line); border-radius:7px; color:var(--muted); font-size:12px }
+    .legend span { margin-right:12px } .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px } .activity { border-radius:2px }
+    .link { stroke:#607487; stroke-opacity:.65; marker-end:url(#arrow) } .node text { pointer-events:none; font-size:10px; fill:var(--text) }
+    .node circle,.node rect { stroke:#d8e4ee; stroke-width:1.5 } .faded { opacity:.12 } .selected { stroke:#ffcf66 !important; stroke-width:3 !important }
+    dl { margin:0 } dt { color:var(--muted); font-size:11px; margin-top:12px } dd { margin:3px 0 0; word-break:break-word }
+  </style>
+</head>
+<body><header><h1>Provenance graph</h1><span class="subtitle">drag nodes · scroll to zoom · click to inspect</span><input id="search" placeholder="Filter by label or type…"></header>
+<main><section id="viz"><div class="legend"><span><i class="dot" style="background:#65b7ff"></i>entity</span><span><i class="dot activity" style="background:#ef8f62"></i>activity</span></div></section><aside><h2>Selection</h2><div id="details" class="hint">Select a node to see its annotations and connections.</div></aside></main>
+<script>
+const colors={entity:'#65b7ff',activity:'#ef8f62'}; const details=d3.select('#details');
+fetch('{% url "graph-data" %}').then(r=>r.json()).then(data=>{
+ const svg=d3.select('#viz').append('svg'), width=svg.node().clientWidth, height=svg.node().clientHeight;
+ const root=svg.append('g'); svg.append('defs').append('marker').attr('id','arrow').attr('viewBox','0 -5 10 10').attr('refX',18).attr('markerWidth',5).attr('markerHeight',5).attr('orient','auto').append('path').attr('fill','#607487').attr('d','M0,-5L10,0L0,5');
+ const zoom=d3.zoom().scaleExtent([.2,4]).on('zoom',e=>root.attr('transform',e.transform)); svg.call(zoom);
+ const sim=d3.forceSimulation(data.nodes).force('link',d3.forceLink(data.links).id(d=>d.id).distance(115)).force('charge',d3.forceManyBody().strength(-260)).force('center',d3.forceCenter(width/2,height/2));
+ const links=root.append('g').selectAll('line').data(data.links).join('line').attr('class','link');
+ const nodes=root.append('g').selectAll('.node').data(data.nodes).join('g').attr('class','node').call(d3.drag().on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y}).on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y}).on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null}));
+ nodes.each(function(d){const n=d3.select(this); if(d.kind==='entity') n.append('circle').attr('r',9).attr('fill',colors.entity); else n.append('rect').attr('x',-8).attr('y',-8).attr('width',16).attr('height',16).attr('fill',colors.activity); n.append('text').attr('x',13).attr('y',4).text(d.label)});
+ nodes.on('click',(e,d)=>{nodes.classed('selected',x=>x.id===d.id); const connected=new Set([d.id,...data.links.filter(l=>l.source.id===d.id||l.target.id===d.id).flatMap(l=>[l.source.id,l.target.id])]); nodes.classed('faded',x=>!connected.has(x.id)); links.classed('faded',l=>l.source.id!==d.id&&l.target.id!==d.id); details.html(`<dl><dt>Kind</dt><dd>${d.kind}</dd><dt>Label</dt><dd>${d.label}</dd><dt>Type</dt><dd>${d.type_name} <small>(${d.type})</small></dd>${d.annotation?`<dt>Annotation</dt><dd>${d.annotation}</dd>`:''}<dt>Connections</dt><dd>${connected.size-1}</dd></dl>`)});
+ d3.select('#search').on('input',function(){const q=this.value.toLowerCase(); nodes.classed('faded',d=>q&&!(`${d.label} ${d.type}`.toLowerCase().includes(q)));});
+ sim.on('tick',()=>{links.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);nodes.attr('transform',d=>`translate(${d.x},${d.y})`)});
+});
+</script></body></html>

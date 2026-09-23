@@ -2,7 +2,7 @@ services:
   db:
     image: mysql:8.4
     environment:
-      MYSQL_DATABASE: sgbc
+      MYSQL_DATABASE: sgbc_django
       MYSQL_USER: sgbc
       MYSQL_PASSWORD: sgbc_dev_password
       MYSQL_ROOT_PASSWORD: sgbc_root_password
@@ -20,16 +20,39 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      MYSQL_DATABASE: sgbc
+      MYSQL_DATABASE: sgbc_django
       MYSQL_USER: sgbc
       MYSQL_PASSWORD: sgbc_dev_password
-      MYSQL_HOST: db
+      MYSQL_HOST: host.docker.internal
       MYSQL_PORT: "3306"
     volumes:
       - ./datamodel_demo:/app
     ports:
       - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      MYSQL_DATABASE: sgbc_django
+      MYSQL_USER: sgbc
+      MYSQL_PASSWORD: sgbc_dev_password
+      MYSQL_HOST: host.docker.internal
+      MYSQL_PORT: "3306"
+    volumes:
+      - ./datamodel_demo:/app
+    ports:
+      - "8888:8888"
     depends_on:
       db:
         condition: service_healthy

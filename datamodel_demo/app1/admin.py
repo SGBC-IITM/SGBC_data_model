@@ -1,6 +1,9 @@
 from django.contrib import admin
-from django.apps import apps
+from unfold.admin import ModelAdmin
+from .models import *
 
+class InformativeModelAdmin(ModelAdmin):
+	"""Choose useful columns for generated models without per-model classes."""
 
 class InformativeModelAdmin(admin.ModelAdmin):
 	"""Choose useful columns for generated models without per-model classes."""
