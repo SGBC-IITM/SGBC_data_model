@@ -3,8 +3,9 @@
 from django.contrib import admin
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 
 from .models import Activity, ActivityEntity, ActivityInformationRecord, Entity
 
@@ -29,6 +30,25 @@ def _timeline_rows(entity_page):
     return rows
 
 
+def _timeline_entities():
+    """Entity queryset with everything needed to render a timeline lane."""
+    sidecars = ActivityInformationRecord.objects.select_related(
+        "protocol", "operator_agent", "recorded_by_agent"
+    ).order_by("-version", "-recorded_at")
+    outputs = ActivityEntity.objects.filter(port__direction="output").select_related(
+        "entity", "entity__entity_type", "port"
+    ).order_by("sequence_no", "entity__identifier")
+    links = ActivityEntity.objects.select_related(
+        "activity", "activity__activity_type", "port"
+    ).prefetch_related(
+        Prefetch("activity__information_records", queryset=sidecars, to_attr="timeline_sidecars"),
+        Prefetch("activity__entity_links", queryset=outputs, to_attr="timeline_output_links"),
+    ).order_by("activity__created_at")
+    return Entity.objects.select_related("entity_type").prefetch_related(
+        Prefetch("activity_links", queryset=links, to_attr="timeline_links")
+    )
+
+
 def activity_timeline_dashboard(request):
     """Paginated Unfold dashboard of entity activity swimlanes."""
     query = request.GET.get("q", "").strip()
@@ -36,17 +56,7 @@ def activity_timeline_dashboard(request):
     if entity_type and not entity_type.isdecimal():
         entity_type = ""
 
-    sidecars = ActivityInformationRecord.objects.select_related(
-        "protocol", "operator_agent", "recorded_by_agent"
-    ).order_by("-version", "-recorded_at")
-    links = ActivityEntity.objects.select_related(
-        "activity", "activity__activity_type", "port"
-    ).prefetch_related(
-        Prefetch("activity__information_records", queryset=sidecars, to_attr="timeline_sidecars")
-    ).order_by("activity__created_at")
-    entities = Entity.objects.select_related("entity_type").prefetch_related(
-        Prefetch("activity_links", queryset=links, to_attr="timeline_links")
-    ).order_by("identifier")
+    entities = _timeline_entities().order_by("identifier")
 
     if query:
         entities = entities.filter(
@@ -72,6 +82,14 @@ def activity_timeline_dashboard(request):
         ).distinct().order_by("entity_type__name"),
     }
     return render(request, "app1/activity_timeline_dashboard.html", context)
+
+
+def activity_timeline_lane(request, entity_id):
+    """Render one additional lane for progressive provenance exploration."""
+    entity = get_object_or_404(_timeline_entities(), pk=entity_id)
+    row = _timeline_rows([entity])[0]
+    html = render_to_string("app1/_activity_timeline_lane.html", {"row": row}, request=request)
+    return HttpResponse(html)
 
 
 def graph_explorer(request):

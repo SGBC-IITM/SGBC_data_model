@@ -1,0 +1,47 @@
+<section class="timeline-row" data-entity-id="{{ row.entity.pk }}" aria-labelledby="entity-{{ row.entity.pk }}">
+  <header class="timeline-entity">
+    <strong id="entity-{{ row.entity.pk }}">{{ row.entity.identifier }}</strong>
+    <span>{{ row.entity.entity_type.name }}</span>
+    {% if row.entity.physical_identity %}<span>Physical ID: {{ row.entity.physical_identity }}</span>{% endif %}
+  </header>
+  <div class="timeline-track-wrap"><div class="timeline-track">
+    {% for activity in row.activities %}
+      {% with sidecar=activity.timeline_sidecars.0 %}
+        <button class="timeline-event" type="button" data-details="activity-{{ row.entity.pk }}-{{ activity.pk }}">
+          <strong>{{ activity.activity_type.name }}</strong>
+          <small>{{ activity.identifier }}</small>
+          <time>{% if sidecar.started_at %}{{ sidecar.started_at|date:"M j, Y H:i" }}{% else %}{{ activity.created_at|date:"M j, Y H:i" }}{% endif %}</time>
+        </button>
+        <template id="activity-{{ row.entity.pk }}-{{ activity.pk }}">
+          <dl>
+            <dt>Activity</dt><dd>{{ activity.identifier }}</dd>
+            <dt>Type</dt><dd>{{ activity.activity_type.name }} ({{ activity.activity_type.code }})</dd>
+            {% if sidecar %}
+              <dt>Sidecar version</dt><dd>{{ sidecar.version }}</dd>
+              <dt>Status</dt><dd>{{ sidecar.status|default:"—" }}</dd>
+              <dt>Started</dt><dd>{{ sidecar.started_at|date:"DATETIME_FORMAT"|default:"—" }}</dd>
+              <dt>Ended</dt><dd>{{ sidecar.ended_at|date:"DATETIME_FORMAT"|default:"—" }}</dd>
+              <dt>Protocol</dt><dd>{{ sidecar.protocol|default:"—" }}</dd>
+              <dt>Operator</dt><dd>{{ sidecar.operator_agent|default:"—" }}</dd>
+              <dt>Description</dt><dd>{{ sidecar.description|default:"—" }}</dd>
+              <dt>Notes</dt><dd>{{ sidecar.notes|default:"—" }}</dd>
+              <dt>Metadata</dt><dd>{{ sidecar.metadata|default:"—" }}</dd>
+            {% else %}<dt>Sidecar</dt><dd>No activity information record has been added.</dd>{% endif %}
+          </dl>
+          {% if activity.timeline_output_links %}
+            <div class="timeline-outputs">
+              <h3>Output entities</h3>
+              <div class="timeline-output-actions">
+                {% for output in activity.timeline_output_links %}
+                  <button type="button" class="timeline-output" data-entity-id="{{ output.entity_id }}" data-lane-url="{% url 'activity-timeline-lane' output.entity_id %}">
+                    <strong>{{ output.entity.identifier }}</strong><span>{{ output.entity.entity_type.name }}</span>
+                  </button>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </template>
+      {% endwith %}
+    {% empty %}<span class="timeline-empty">No activities recorded</span>{% endfor %}
+  </div></div>
+</section>

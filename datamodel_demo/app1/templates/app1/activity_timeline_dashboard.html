@@ -36,9 +36,20 @@
     .timeline-modal-body dt,.timeline-modal-body dd { border-bottom:1px solid var(--tl-line); margin:0; padding:.65rem 0; }
     .timeline-modal-body dt { color:var(--tl-muted); font-size:.75rem; font-weight:600; text-transform:uppercase; }
     .timeline-modal-body dd { overflow-wrap:anywhere; white-space:pre-wrap; }
+    .timeline-outputs { border-top:1px solid var(--tl-line); margin-top:1rem; padding-top:1rem; }
+    .timeline-outputs h3 { font-size:.8rem; margin:0 0 .7rem; text-transform:uppercase; }
+    .timeline-output-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .timeline-output { background:#f8fafc; border:1px solid var(--tl-line); border-radius:.55rem; color:inherit; cursor:pointer; padding:.55rem .75rem; text-align:left; }
+    .timeline-output:hover,.timeline-output:focus-visible { border-color:var(--tl-accent); outline:2px solid #60a5fa; }
+    .timeline-output strong,.timeline-output span { display:block; }
+    .timeline-output span { color:var(--tl-muted); font-size:.7rem; margin-top:.15rem; }
+    .timeline-output[disabled] { cursor:wait; opacity:.55; }
+    .timeline-row-added { animation:timeline-arrive 1.2s ease-out; }
+    @keyframes timeline-arrive { from { background:#dbeafe; } to { background:transparent; } }
     .timeline-no-results { color:var(--tl-muted); padding:3rem; text-align:center; }
     .dark .timeline-shell { --tl-line:#334155; --tl-muted:#94a3b8; }
     .dark .timeline-event { background:#172554; border-color:#1d4ed8; color:#dbeafe; }
+    .dark .timeline-output { background:#1e293b; }
     @media (prefers-color-scheme:dark) { .timeline-shell { --tl-line:#334155; --tl-muted:#94a3b8; } .timeline-event { background:#172554; border-color:#1d4ed8; color:#dbeafe; } }
     @media (max-width:700px) { .timeline-header { align-items:stretch; flex-direction:column; } .timeline-row { grid-template-columns:9rem minmax(0,1fr); } .timeline-modal-body dl { grid-template-columns:1fr; } .timeline-modal-body dt { border-bottom:0; padding-bottom:0; } }
   </style>
@@ -58,43 +69,9 @@
     </form>
   </div>
 
-  <div class="timeline-board">
+  <div class="timeline-board" id="timeline-board">
     {% for row in rows %}
-      <section class="timeline-row" aria-labelledby="entity-{{ row.entity.pk }}">
-        <header class="timeline-entity">
-          <strong id="entity-{{ row.entity.pk }}">{{ row.entity.identifier }}</strong>
-          <span>{{ row.entity.entity_type.name }}</span>
-          {% if row.entity.physical_identity %}<span>Physical ID: {{ row.entity.physical_identity }}</span>{% endif %}
-        </header>
-        <div class="timeline-track-wrap"><div class="timeline-track">
-          {% for activity in row.activities %}
-            {% with sidecar=activity.timeline_sidecars.0 %}
-              <button class="timeline-event" type="button" data-details="activity-{{ row.entity.pk }}-{{ activity.pk }}">
-                <strong>{{ activity.activity_type.name }}</strong>
-                <small>{{ activity.identifier }}</small>
-                <time>{% if sidecar.started_at %}{{ sidecar.started_at|date:"M j, Y H:i" }}{% else %}{{ activity.created_at|date:"M j, Y H:i" }}{% endif %}</time>
-              </button>
-              <template id="activity-{{ row.entity.pk }}-{{ activity.pk }}">
-                <dl>
-                  <dt>Activity</dt><dd>{{ activity.identifier }}</dd>
-                  <dt>Type</dt><dd>{{ activity.activity_type.name }} ({{ activity.activity_type.code }})</dd>
-                  {% if sidecar %}
-                    <dt>Sidecar version</dt><dd>{{ sidecar.version }}</dd>
-                    <dt>Status</dt><dd>{{ sidecar.status|default:"—" }}</dd>
-                    <dt>Started</dt><dd>{{ sidecar.started_at|date:"DATETIME_FORMAT"|default:"—" }}</dd>
-                    <dt>Ended</dt><dd>{{ sidecar.ended_at|date:"DATETIME_FORMAT"|default:"—" }}</dd>
-                    <dt>Protocol</dt><dd>{{ sidecar.protocol|default:"—" }}</dd>
-                    <dt>Operator</dt><dd>{{ sidecar.operator_agent|default:"—" }}</dd>
-                    <dt>Description</dt><dd>{{ sidecar.description|default:"—" }}</dd>
-                    <dt>Notes</dt><dd>{{ sidecar.notes|default:"—" }}</dd>
-                    <dt>Metadata</dt><dd>{{ sidecar.metadata|default:"—" }}</dd>
-                  {% else %}<dt>Sidecar</dt><dd>No activity information record has been added.</dd>{% endif %}
-                </dl>
-              </template>
-            {% endwith %}
-          {% empty %}<span class="timeline-empty">No activities recorded</span>{% endfor %}
-        </div></div>
-      </section>
+      {% include "app1/_activity_timeline_lane.html" with row=row %}
     {% empty %}<div class="timeline-no-results">No entities match these filters.</div>{% endfor %}
   </div>
 
@@ -117,12 +94,38 @@
 (() => {
   const modal = document.getElementById('activity-modal');
   const body = modal.querySelector('.timeline-modal-body');
+  const board = document.getElementById('timeline-board');
   let trigger;
-  document.querySelectorAll('.timeline-event').forEach(button => button.addEventListener('click', () => {
-    trigger = button;
-    body.replaceChildren(document.getElementById(button.dataset.details).content.cloneNode(true));
-    modal.showModal();
-  }));
+  document.addEventListener('click', async event => {
+    const activity = event.target.closest('.timeline-event');
+    if (activity) {
+      trigger = activity;
+      body.replaceChildren(document.getElementById(activity.dataset.details).content.cloneNode(true));
+      modal.showModal();
+      return;
+    }
+
+    const output = event.target.closest('.timeline-output');
+    if (!output) return;
+    const selector = `.timeline-row[data-entity-id="${output.dataset.entityId}"]`;
+    let lane = board.querySelector(selector);
+    if (!lane) {
+      output.disabled = true;
+      try {
+        const response = await fetch(output.dataset.laneUrl, {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+        if (!response.ok) throw new Error(`Unable to load lane (${response.status})`);
+        board.insertAdjacentHTML('beforeend', await response.text());
+        lane = board.querySelector(selector);
+        lane.classList.add('timeline-row-added');
+      } catch (error) {
+        output.disabled = false;
+        output.title = error.message;
+        return;
+      }
+    }
+    modal.close();
+    lane.scrollIntoView({behavior:'smooth', block:'center'});
+  });
   modal.querySelector('button').addEventListener('click', () => modal.close());
   modal.addEventListener('click', event => { if (event.target === modal) modal.close(); });
   modal.addEventListener('close', () => trigger?.focus());
